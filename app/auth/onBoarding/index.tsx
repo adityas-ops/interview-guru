@@ -1,18 +1,25 @@
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    Animated,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const Index = () => {
   const imageOpacity = useRef(new Animated.Value(0)).current;
-  const imageTranslateY = useRef(new Animated.Value(50)).current;
+  const imageTranslateY = useRef(new Animated.Value(10)).current;
   const headingOpacity = useRef(new Animated.Value(0)).current;
-  const headingTranslateY = useRef(new Animated.Value(50)).current;
+  const headingTranslateY = useRef(new Animated.Value(10)).current;
   const subHeadingOpacity = useRef(new Animated.Value(0)).current;
-  const subHeadingTranslateY = useRef(new Animated.Value(50)).current;
+  const subHeadingTranslateY = useRef(new Animated.Value(10)).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonTranslateY = useRef(new Animated.Value(50)).current;
+  const buttonTranslateY = useRef(new Animated.Value(10)).current;
 
   useEffect(() => {
     // Animate image first
@@ -74,7 +81,7 @@ const Index = () => {
 
   return (
     <LinearGradient
-      colors={["rgba(65, 132, 248, 1)", "rgba(53, 91, 161, 1)"]}
+      colors={["#4184f8ff", "rgba(53, 91, 161, 1)"]}
       style={styles.background}
     >
       <View style={styles.container}>
@@ -94,7 +101,7 @@ const Index = () => {
             contentFit="contain"
           />
         </Animated.View>
-        
+
         <Animated.View
           style={{
             opacity: headingOpacity,
@@ -103,7 +110,7 @@ const Index = () => {
         >
           <Text style={styles.heading}>Al Interview Coach</Text>
         </Animated.View>
-        
+
         <Animated.View
           style={{
             opacity: subHeadingOpacity,
@@ -112,14 +119,20 @@ const Index = () => {
         >
           <Text style={styles.subHeading}>Master Your Next Interview</Text>
         </Animated.View>
-        
+
         <Animated.View
           style={{
             opacity: buttonOpacity,
             transform: [{ translateY: buttonTranslateY }],
           }}
         >
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/auth/onBoarding/boardingOne");
+            }}
+            activeOpacity={0.8}
+            style={styles.button}
+          >
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
         </Animated.View>
