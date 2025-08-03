@@ -7,136 +7,66 @@ import {
     Animated,
     StyleSheet,
     Text,
-    TouchableOpacity,
-    View,
+    TouchableOpacity
 } from "react-native";
 
 const Index = () => {
-  const imageOpacity = useRef(new Animated.Value(0)).current;
-  const imageTranslateY = useRef(new Animated.Value(10)).current;
-  const headingOpacity = useRef(new Animated.Value(0)).current;
-  const headingTranslateY = useRef(new Animated.Value(10)).current;
-  const subHeadingOpacity = useRef(new Animated.Value(0)).current;
-  const subHeadingTranslateY = useRef(new Animated.Value(10)).current;
-  const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonTranslateY = useRef(new Animated.Value(10)).current;
+  const containerOpacity = useRef(new Animated.Value(0)).current;
+  const containerTranslateY = useRef(new Animated.Value(120)).current;
 
   useEffect(() => {
-    // Animate image first
     Animated.parallel([
-      Animated.timing(imageOpacity, {
+      Animated.timing(containerOpacity, {
         toValue: 1,
-        duration: 800,
+        duration: 1500,
         useNativeDriver: true,
       }),
-      Animated.timing(imageTranslateY, {
+      Animated.timing(containerTranslateY, {
         toValue: 0,
-        duration: 800,
+        duration: 1500,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Animate heading after image
-      Animated.parallel([
-        Animated.timing(headingOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(headingTranslateY, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        // Animate subheading after heading
-        Animated.parallel([
-          Animated.timing(subHeadingOpacity, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(subHeadingTranslateY, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          // Animate button last
-          Animated.parallel([
-            Animated.timing(buttonOpacity, {
-              toValue: 1,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-            Animated.timing(buttonTranslateY, {
-              toValue: 0,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        });
-      });
-    });
-  }, []);
+    ]).start();
+  }, [containerOpacity, containerTranslateY]);
 
   return (
     <LinearGradient
       colors={["#4184f8ff", "rgba(53, 91, 161, 1)"]}
       style={styles.background}
     >
-      <View style={styles.container}>
-        <Animated.View
-          style={{
-            opacity: imageOpacity,
-            transform: [{ translateY: imageTranslateY }],
-          }}
+              <Animated.View
+          style={[
+            styles.container,
+            {
+              opacity: containerOpacity,
+              transform: [{ translateY: containerTranslateY }],
+            },
+          ]}
         >
-          <Image
-            source={require("@/assets/images/intervewguru-logo.png")}
-            style={{
-              height: 120,
-              width: 120,
-              borderRadius: 25,
-            }}
-            contentFit="contain"
-          />
-        </Animated.View>
+        <Image
+          source={require("@/assets/images/intervewguru-logo.png")}
+          style={{
+            height: 120,
+            width: 120,
+            borderRadius: 25,
+          }}
+          contentFit="contain"
+        />
 
-        <Animated.View
-          style={{
-            opacity: headingOpacity,
-            transform: [{ translateY: headingTranslateY }],
-          }}
-        >
-          <Text style={styles.heading}>Al Interview Coach</Text>
-        </Animated.View>
+        <Text style={styles.heading}>Al Interview Coach</Text>
 
-        <Animated.View
-          style={{
-            opacity: subHeadingOpacity,
-            transform: [{ translateY: subHeadingTranslateY }],
-          }}
-        >
-          <Text style={styles.subHeading}>Master Your Next Interview</Text>
-        </Animated.View>
+        <Text style={styles.subHeading}>Master Your Next Interview</Text>
 
-        <Animated.View
-          style={{
-            opacity: buttonOpacity,
-            transform: [{ translateY: buttonTranslateY }],
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/auth/onBoarding/boardingOne");
           }}
+          activeOpacity={0.8}
+          style={styles.button}
         >
-          <TouchableOpacity
-            onPress={() => {
-              router.push("/auth/onBoarding/boardingOne");
-            }}
-            activeOpacity={0.8}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>Get Started</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </Animated.View>
       <ExpoStatusBar style="light" />
     </LinearGradient>
   );
