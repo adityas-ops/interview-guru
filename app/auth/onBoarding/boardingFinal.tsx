@@ -1,4 +1,4 @@
-import AntDesign from "@expo/vector-icons/AntDesign";
+import Ionicons from '@expo/vector-icons/Ionicons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
@@ -51,10 +51,10 @@ const BoardingFinal = () => {
         </LinearGradient>
         {/* text */}
         <Text style={styles.headingText}>
-            Resume-based Questions
+           Score & Improve
         </Text>
         <Text style={styles.subHeadingText}>
-         Upload your resume and receive tailored interview questions specific to your experience and target role
+         Track your progress with detailed scoring on confidence, fluency, and technical skills with actionable feedback
         </Text>
       </Animated.View>
       <Animated.View
@@ -67,12 +67,13 @@ const BoardingFinal = () => {
         ]}
       >
         <View style={styles.bubble} />
-        <View style={styles.bubble} />
+        <View  style={styles.bubble} />
          <View style={styles.activeBubble} />
       </Animated.View>
       <TouchableOpacity activeOpacity={0.8} style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>Next</Text>
-        <AntDesign name="arrowright" size={22} color="white" />
+        <Text style={styles.buttonText}>Get Started</Text>
+        {/* <AntDesign name="arrowright" size={22} color="white" /> */}
+        <Ionicons name="play-outline" size={22} color="white" />
       </TouchableOpacity>
       <ExpoStatusBar style="dark" />
     </SafeAreaView>
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     display: "flex",
     flexDirection: "row",
-    gap: 20,
+    gap: 12,
     borderRadius: 8,
   },
   buttonText: {
