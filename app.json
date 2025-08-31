@@ -10,11 +10,9 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.interviewguru.interviewguru",
-       "googleServicesFile":"./GoogleService-Info.plist"
+      "bundleIdentifier": "com.interviewguru.interviewguru"
     },
     "android": {
-       "googleServicesFile":"./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/intervewguru-logo.png",
         "backgroundColor": "#34a8fa"
