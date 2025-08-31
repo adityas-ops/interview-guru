@@ -5,6 +5,8 @@ const Layout = () => {
     return (
        <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name='onBoarding'/>
+        <Stack.Screen name='sign-in'/>
+        <Stack.Screen name='log-in'/>
        </Stack>
     );
 }

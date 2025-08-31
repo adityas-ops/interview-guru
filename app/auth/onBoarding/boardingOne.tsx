@@ -5,12 +5,12 @@ import { router } from "expo-router";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useEffect, useRef } from "react";
 import {
-    Animated,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const BoardingOne = () => {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginHorizontal: "auto",
     justifyContent: "center",
     alignItems: "center",
-    height: 40,
+    height: 50,
     backgroundColor: "#4184f8ff",
     marginVertical: 20,
     display: "flex",

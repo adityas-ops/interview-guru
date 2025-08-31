@@ -1,15 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from 'expo-router';
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useEffect, useRef } from "react";
 import {
-    Animated,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const BoardingFinal = () => {
@@ -70,9 +71,10 @@ const BoardingFinal = () => {
         <View  style={styles.bubble} />
          <View style={styles.activeBubble} />
       </Animated.View>
-      <TouchableOpacity activeOpacity={0.8} style={styles.buttonContainer}>
+      <TouchableOpacity onPress={()=>{
+        router.replace("/auth/log-in")
+      }} activeOpacity={0.8} style={styles.buttonContainer}>
         <Text style={styles.buttonText}>Get Started</Text>
-        {/* <AntDesign name="arrowright" size={22} color="white" /> */}
         <Ionicons name="play-outline" size={22} color="white" />
       </TouchableOpacity>
       <ExpoStatusBar style="dark" />
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     marginHorizontal: "auto",
     justifyContent: "center",
     alignItems: "center",
-    height: 40,
+     height: 50,
     backgroundColor: "#4184f8ff",
     marginVertical: 20,
     display: "flex",

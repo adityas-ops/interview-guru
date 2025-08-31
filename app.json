@@ -9,19 +9,22 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.interviewguru.interviewguru",
+       "googleServicesFile":"./GoogleService-Info.plist"
     },
     "android": {
+       "googleServicesFile":"./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/intervewguru-logo.png",
         "backgroundColor": "#34a8fa"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.interviewguru.interviewguru"
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
@@ -33,10 +36,24 @@
           "resizeMode": "contain",
           "backgroundColor": "#34a8fa"
         }
+      ],
+
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "21ccbd9b-9c08-474f-b540-3c459ee33c0f"
+      }
     }
   }
 }
