@@ -1,7 +1,7 @@
 import { persistor, store } from "@/store";
 import { authPersistence } from "@/store/authPersistence";
 import { initializeFromStorage } from "@/store/authSlice";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Provider, useDispatch } from "react-redux";
@@ -51,7 +51,11 @@ export default function RootLayout() {
     <Provider store={store}>
       <PersistGate persistor={persistor}>
         <AuthStateBridge>
-          <Slot />
+           <Stack screenOptions={{headerShown:false}}>
+              <Stack.Screen name="(tabs)"/>
+               <Stack.Screen name="auth"/>
+                <Stack.Screen name="settings"/>
+           </Stack>
         </AuthStateBridge>
       </PersistGate>
     </Provider>

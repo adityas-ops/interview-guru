@@ -16,7 +16,8 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
-      supportsTablet: true,
+      "supportsTablet": false,
+      "bundleIdentifier": "com.interviewguru.interviewguru"
     },
     android: {
       adaptiveIcon: {
