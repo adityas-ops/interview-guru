@@ -1,9 +1,9 @@
 import { RootState } from "@/store";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 const HomeScreen = () => {
   const userData = useSelector((state: RootState) => state.auth.user);
+  const domainData = useSelector((state: RootState) => state.domain.currentDomain);
   const myDate = new Date();
   const hours = myDate.getHours();
   let greet;
@@ -29,6 +30,22 @@ const HomeScreen = () => {
     greet = "evening";
   }
   const firstName = userData?.displayName || "User";
+
+  console.log("domain data",domainData)
+
+  const getFieldDisplayName = (field: string) => {
+    const fieldNames: { [key: string]: string } = {
+      frontend: 'Frontend Developer',
+      backend: 'Backend Developer',
+      fullstack: 'Full Stack Developer',
+      mobile: 'Mobile Developer',
+      devops: 'DevOps Engineer',
+      data: 'Data Scientist',
+      uiux: 'UI/UX Designer',
+      qa: 'QA Engineer'
+    };
+    return fieldNames[field] || 'Developer';
+  };
   return (
     <View style={styles.container}>
       {/* // gradient start from  left top and reach to bottom right */}
@@ -78,7 +95,9 @@ const HomeScreen = () => {
         contentContainerStyle={{ flexGrow: 1 }}
       >
         {/* document upload */}
-        <TouchableOpacity style={styles.resumeContainer}>
+        {/* <TouchableOpacity onPress={()=>{
+          router.push("/homeRoutes/resumeUpload");
+        }} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.iconContainer}>
             <AntDesign name="upload" size={20} color="#04a256ff" />
           </View>
@@ -95,22 +114,26 @@ const HomeScreen = () => {
               color="#939090ff"
             />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {/* choose domain */}
-        <TouchableOpacity style={styles.resumeContainer}>
+        <TouchableOpacity onPress={()=>router.push(domainData ? "/homeRoutes/domainSelection/editDomain" : "/homeRoutes/chooseDomain")} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.SkillIconContainer}>
             {/* <AntDesign name="upload" size={20} color="#04a256ff" /> */}
             <FontAwesome5 name="suitcase" size={20} color="#5b22ebff" />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.resumeTextHeader}>Choose Domain</Text>
-            <Text style={styles.resumeSecondaryText}>Frontend Engineer</Text>
+            <Text style={styles.resumeTextHeader}>
+              {domainData ? 'Your Domain' : 'Choose Domain'}
+            </Text>
+            <Text style={styles.resumeSecondaryText}>
+              {domainData ? getFieldDisplayName(domainData.field) : 'Select your expertise'}
+            </Text>
           </View>
           <View style={styles.arrowContainer}>
             <MaterialIcons
-              name="arrow-forward-ios"
-              size={14}
-              color="#939090ff"
+              name={domainData ? "edit" : "arrow-forward-ios"}
+              size={24}
+              color="#3707e5ff"
             />
           </View>
         </TouchableOpacity>

@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
     borderColor: "#2e2e2eff",
     marginTop: 5,
     borderRadius: 8,
+    color: "#000",
   },
   buttonContainer: {
     maxWidth: "100%",

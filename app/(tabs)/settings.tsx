@@ -3,11 +3,13 @@ import { RootState } from "@/store";
 import { authPersistence } from "@/store/authPersistence";
 import { clearUser } from "@/store/authSlice";
 import { MaterialIcons } from "@expo/vector-icons";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,28 +22,26 @@ import { useDispatch, useSelector } from "react-redux";
 const SettingsScreen = () => {
   const dispatch = useDispatch();
   const userData = useSelector((state: RootState) => state.auth.user);
+  const [warningModelLogout, setWarningModelLogout] = useState<boolean>(false);
 
   const handleLogout = async () => {
     try {
-      await authPersistence.clearUserData();
-      dispatch(clearUser());
-      router.replace("/auth/log-in");
+      setWarningModelLogout(!warningModelLogout);
     } catch (error) {
       console.error("Logout error:", error);
       Alert.alert("Error", "Failed to logout. Please try again.");
     }
   };
 
-  const handleProfileEdit = () => {
-    Alert.alert("Profile Edit", "Profile editing feature coming soon!");
-  };
-
-  const handleNotifications = () => {
-    Alert.alert("Notifications", "Notification settings coming soon!");
-  };
-
-  const handlePrivacy = () => {
-    Alert.alert("Privacy", "Privacy settings coming soon!");
+  const submitLogout = async () => {
+    try {
+      await authPersistence.clearUserData();
+      dispatch(clearUser());
+      router.replace("/auth/onBoarding");
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to logout. Please try again.");
+    }
   };
 
   return (
@@ -70,25 +70,72 @@ const SettingsScreen = () => {
         <RouteCard
           title="Edit Profile"
           subtitle="Update your profile information"
-          icon={<MaterialIcons name="edit" size={24} color="#fff" />}
-          iconBackground="#5ca0ffff"
+          // icon={<MaterialIcons name="edit" size={24} color="#5ca0ffff" />}
+          icon={<FontAwesome5 name="user-edit" size={20} color="#066bf7ff" />}
+          iconBackground="#bed7fbff"
           routePath="/settings/editProfile"
         />
         <RouteCard
           title="Notifications"
           subtitle="Manage your notification preferences"
-          icon={<MaterialIcons name="notifications" size={24} color="#fff" />}
-          iconBackground="#5ca0ffff"
+          icon={
+            <MaterialIcons name="notifications" size={24} color="#206840ff" />
+          }
+          iconBackground="#b8ebd0ff"
           routePath="/settings/notification"
         />
         <RouteCard
           title="Privacy"
           subtitle="Adjust your privacy settings"
-          icon={<MaterialIcons name="lock" size={24} color="#fff" />}
-          iconBackground="#5ca0ffff"
+          icon={<MaterialIcons name="lock" size={24} color="#860c8fff" />}
+          iconBackground="#d9badbff"
           routePath="/settings/privacy"
         />
+        <View style={styles.logoutContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              handleLogout();
+            }}
+            style={styles.logoutButtonStyle}
+          >
+            <MaterialIcons name="logout" size={20} color="black" />
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+      <Modal
+
+        visible={warningModelLogout}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Logout</Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to logout?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                onPress={() => {
+                  submitLogout();
+                }}
+                style={styles.modalButton}
+              >
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setWarningModelLogout(false);
+                }}
+                style={styles.modalButton}
+              >
+                <Text style={styles.modalButtonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -189,7 +236,7 @@ const styles = StyleSheet.create({
   },
   resumeContainer: {
     width: "100%",
-    padding: 20,
+    padding: 12,
     backgroundColor: "white",
     borderWidth: 0.4,
     borderColor: "#777777ff",
@@ -208,8 +255,66 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  scrollview:{
+  scrollview: {
+    padding: 15,
+  },
+  logoutContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logoutButtonStyle: {
+    height: 45,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: "#9e9191ff",
+    backgroundColor: "white",
+    gap: 5,
+    flexDirection: "row",
+  },
+  logoutText: {
+    color: "#161111ff",
+    fontSize: 18,
+    fontWeight: 500,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
     padding: 10,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  modalButtonText: {
+    fontSize: 16,
+    color: "#007bff",
   },
 });
 
