@@ -57,7 +57,7 @@ const Index = () => {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
           });
-          console.log('User data saved to Firestore successfully');
+          // console.log('User data saved to Firestore successfully');
         } else {
           console.warn('Firestore not properly initialized, skipping Firestore save');
         }

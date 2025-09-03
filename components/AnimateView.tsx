@@ -10,7 +10,7 @@ const AnimateView: React.FC<AnimateViewProps> = ({ children }) => {
   const containerTranslateY = useRef(new Animated.Value(10)).current;
 
   useEffect(() => {
-    Animated.parallel([
+    const animation = Animated.parallel([
       Animated.timing(containerOpacity, {
         toValue: 1,
         duration: 1000,
@@ -21,8 +21,15 @@ const AnimateView: React.FC<AnimateViewProps> = ({ children }) => {
         duration: 1000,
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [containerOpacity, containerTranslateY]);
+    ]);
+
+    animation.start();
+
+    // Cleanup function to stop animation when component unmounts
+    return () => {
+      animation.stop();
+    };
+  }, []); // Empty dependency array since we only want this to run once
 
   return (
     <Animated.View

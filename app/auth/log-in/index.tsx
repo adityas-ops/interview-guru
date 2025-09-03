@@ -38,7 +38,7 @@ const Index = () => {
         email.trim(),
         password
       );
-      console.log("response", response);
+      // console.log("response", response);
       const firebaseUser = response.user;
       
       // Create user data object

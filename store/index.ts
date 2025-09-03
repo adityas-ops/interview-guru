@@ -3,18 +3,20 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import authReducer from "./authSlice";
 import domainReducer from "./domainSlice";
+import interviewReducer from "./interviewSlice";
 import resumeReducer from "./resumeSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
   resume: resumeReducer,
   domain: domainReducer,
+  interview: interviewReducer,
 });
 
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "resume", "domain"],
+  whitelist: ["auth", "resume", "domain", "interview"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

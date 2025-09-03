@@ -15,10 +15,10 @@ const firebaseConfig = {
 let app: FirebaseApp;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
-  console.log('Firebase app initialized');
+  // console.log('Firebase app initialized');
 } else {
   app = getApps()[0];
-  console.log('Using existing Firebase app');
+  // console.log('Using existing Firebase app');
 }
 
 // Initialize auth - Firebase will handle persistence automatically
@@ -26,7 +26,7 @@ let auth: Auth;
 try {
   // Try to get existing auth instance
   auth = getAuth(app);
-  console.log('Using existing Firebase auth instance');
+  // console.log('Using existing Firebase auth instance');
 } catch (error) {
   // If no auth instance exists, create one
   console.log('Creating new Firebase auth instance');

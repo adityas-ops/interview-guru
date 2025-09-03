@@ -17,7 +17,7 @@ class AuthPersistenceService {
   async storeUserData(userData: StoredAuthData): Promise<void> {
     try {
       await AsyncStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
-      console.log('User data stored in AsyncStorage:', userData);
+      // console.log('User data stored in AsyncStorage:', userData);
     } catch (error) {
       console.error('Failed to store user data:', error);
     }
@@ -29,7 +29,7 @@ class AuthPersistenceService {
       const storedData = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
       if (storedData) {
         const userData = JSON.parse(storedData) as StoredAuthData;
-        console.log('Retrieved stored user data:', userData);
+        // console.log('Retrieved stored user data:', userData);
         return userData;
       }
     } catch (error) {
@@ -42,7 +42,7 @@ class AuthPersistenceService {
   async clearUserData(): Promise<void> {
     try {
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
-      console.log('Stored user data cleared');
+      // console.log('Stored user data cleared');
     } catch (error) {
       console.error('Failed to clear stored user data:', error);
     }

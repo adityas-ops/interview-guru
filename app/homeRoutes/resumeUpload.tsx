@@ -21,7 +21,7 @@ export default function UploadResume() {
   const { currentResume, isProcessing } = useSelector((state: RootState) => state.resume);
   const [localResumeData, setLocalResumeData] = useState<ResumeData | null>(null);
 
-  console.log('Current Resume from Redux:', currentResume);
+  // console.log('Current Resume from Redux:', currentResume);
 
   const pickDocument = async (): Promise<void> => {
     try {

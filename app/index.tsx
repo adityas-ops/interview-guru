@@ -8,15 +8,15 @@ export default function Index() {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    console.log('Index: Checking authentication state - isAuthenticated:', isAuthenticated);
+    // console.log('Index: Checking authentication state - isAuthenticated:', isAuthenticated);
     
     if (isAuthenticated) {
       // User is authenticated, redirect to main app
-      console.log('Index: User authenticated, redirecting to /main');
+      // console.log('Index: User authenticated, redirecting to /main');
       router.replace("/(tabs)");
     } else {
       // User is not authenticated, redirect to onboarding
-      console.log('Index: User not authenticated, redirecting to /auth/onBoarding');
+      // console.log('Index: User not authenticated, redirecting to /auth/onBoarding');
       router.replace("/auth/onBoarding");
     }
   }, [isAuthenticated]);

@@ -31,7 +31,7 @@ const HomeScreen = () => {
   }
   const firstName = userData?.displayName || "User";
 
-  console.log("domain data",domainData)
+  // console.log("domain data",domainData)
 
   const getFieldDisplayName = (field: string) => {
     const fieldNames: { [key: string]: string } = {
@@ -80,9 +80,12 @@ const HomeScreen = () => {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              onPress={() => {}}
+              onPress={() => {
+                router.push("/interview")
+              }}
               activeOpacity={0.3}
               style={styles.buttonContainer}
+              
             >
               <Ionicons name="play-outline" size={28} color="#3275d3ff" />
               <Text style={styles.buttonText}>Start Interview</Text>

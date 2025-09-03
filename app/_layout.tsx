@@ -12,17 +12,17 @@ const AuthStateBridge: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    console.log('Checking for stored user data...');
+    // console.log('Checking for stored user data...');
     
     const initializeFromStoredData = async () => {
       try {
         // Check if there's stored user data
         const storedUserData = await authPersistence.getUserData();
         if (storedUserData) {
-          console.log('Found stored user data, initializing Redux state');
+          // console.log('Found stored user data, initializing Redux state');
           dispatch(initializeFromStorage(storedUserData));
         } else {
-          console.log('No stored user data found');
+          // console.log('No stored user data found');
         }
       } catch (error) {
         console.error('Error initializing from stored data:', error);
@@ -56,6 +56,7 @@ export default function RootLayout() {
                <Stack.Screen name="auth"/>
                 <Stack.Screen name="settings"/>
                 <Stack.Screen name="homeRoutes"/>
+                 <Stack.Screen name="interview"/>
            </Stack>
         </AuthStateBridge>
       </PersistGate>
