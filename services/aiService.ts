@@ -133,6 +133,135 @@ Make sure the questions are shuffled and cover different aspects of the domain.`
     }
     return shuffled;
   }
+
+  public async generateInterviewReport(params: ReportGenerationParams): Promise<InterviewReport> {
+    try {
+      const { questions, userAnswers, domainData, completedAt } = params;
+      
+      const prompt = this.createReportPrompt(params);
+      console.log('AIService: Generating interview report with prompt length:', prompt.length);
+      
+      const result = await generateObject({
+        model: this.googleProvider('gemini-1.5-flash'),
+        prompt,
+        schema: InterviewReportSchema,
+      });
+
+      return result.object;
+    } catch (error) {
+      console.error('Error generating interview report:', error);
+      throw new Error('Failed to generate interview report. Please try again.');
+    }
+  }
+
+  private createReportPrompt(params: ReportGenerationParams): string {
+    const { questions, userAnswers, domainData, completedAt } = params;
+    
+    const skillsList = domainData.skills.map(skill => skill.name).join(', ');
+    const languagesList = domainData.programmingLanguages.join(', ');
+    
+    // Create question-answer pairs for analysis
+    const qaPairs = questions.map((question, index) => {
+      const userAnswer = userAnswers.find(ua => ua.question === question.question);
+      return {
+        question: question.question,
+        type: question.type,
+        difficulty: question.difficulty,
+        category: question.category,
+        expectedAnswer: question.expectedAnswer || '',
+        userAnswer: userAnswer?.humanAnswer || 'No answer provided'
+      };
+    });
+
+    return `You are an expert technical interviewer and career coach. Analyze the following interview session and provide a comprehensive report with actionable feedback and learning suggestions.
+
+Interview Context:
+- Domain: ${domainData.field}
+- Experience Level: ${domainData.experience}
+- Skills: ${skillsList}
+- Programming Languages: ${languagesList}
+- Interview Date: ${completedAt.toISOString()}
+- Total Questions: ${questions.length}
+
+Question-Answer Analysis:
+${qaPairs.map((qa, index) => `
+Question ${index + 1}:
+- Question: ${qa.question}
+- Type: ${qa.type}
+- Difficulty: ${qa.difficulty}
+- Category: ${qa.category}
+- Expected Answer: ${qa.expectedAnswer}
+- User Answer: ${qa.userAnswer}
+`).join('\n')}
+
+Please provide a comprehensive analysis including:
+
+1. Overall Performance Score (0-10)
+2. Detailed feedback on each question with individual scores (0-10)
+3. Identify strengths and areas for improvement
+4. For each question where the user struggled, provide specific learning suggestions with:
+   - Topic name
+   - Brief description of what to learn
+   - A relevant learning URL (use reputable sources like MDN, W3Schools, official documentation, Stack Overflow, etc.)
+   - A descriptive title for the URL
+5. General suggestions for overall improvement
+
+Focus on:
+- Technical accuracy and depth of understanding
+- Problem-solving approach
+- Communication clarity
+- Practical application of knowledge
+- Industry best practices
+
+For learning URLs, prioritize:
+- Official documentation
+- MDN Web Docs
+- W3Schools
+- Stack Overflow
+- GitHub documentation
+- Educational platforms like freeCodeCamp, Codecademy
+- YouTube tutorials from reputable channels
+
+Return the analysis in the specified JSON format.`;
+  }
+}
+
+// Define the schema for interview reports
+const ReportSuggestionSchema = z.object({
+  topic: z.string(),
+  description: z.string(),
+  learningUrl: z.string(),
+  urlTitle: z.string(),
+});
+
+const QuestionAnalysisSchema = z.object({
+  question: z.string(),
+  userAnswer: z.string(),
+  score: z.number().min(0).max(10),
+  feedback: z.string(),
+  suggestions: z.array(ReportSuggestionSchema),
+});
+
+const InterviewReportSchema = z.object({
+  overallScore: z.number().min(0).max(10),
+  totalQuestions: z.number(),
+  completedAt: z.string(),
+  overallFeedback: z.string(),
+  strengths: z.array(z.string()),
+  areasForImprovement: z.array(z.string()),
+  questionAnalysis: z.array(QuestionAnalysisSchema),
+  generalSuggestions: z.array(ReportSuggestionSchema),
+});
+
+export type InterviewReport = z.infer<typeof InterviewReportSchema>;
+export type QuestionAnalysis = z.infer<typeof QuestionAnalysisSchema>;
+export type ReportSuggestion = z.infer<typeof ReportSuggestionSchema>;
+
+export interface ReportGenerationParams {
+  questions: InterviewQuestion[];
+  userAnswers: { question: string; humanAnswer: string }[];
+  domainData: DomainData;
+  completedAt: Date;
 }
 
 export default AIService;

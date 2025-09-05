@@ -1,6 +1,11 @@
-import { InterviewQuestion } from "@/services/aiService";
+import { InterviewQuestion, InterviewReport } from "@/services/aiService";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { generateInterviewQuestions } from "./interviewThunks";
+import { generateInterviewQuestions, generateInterviewReport } from "./interviewThunks";
+
+export interface UserAnswer {
+    question: string;
+    humanAnswer: string;
+}
 
 export interface QuestionsDetails {
     level: "easy" | "medium" | "hard";
@@ -9,6 +14,11 @@ export interface QuestionsDetails {
     isLoading: boolean;
     error: string | null;
     currentQuestionIndex: number;
+    userAnswers: UserAnswer[];
+    isSaving: boolean;
+    report: InterviewReport | null;
+    isGeneratingReport: boolean;
+    reportError: string | null;
 }
 
 const initialState: QuestionsDetails = {
@@ -17,7 +27,12 @@ const initialState: QuestionsDetails = {
     questions: [],
     isLoading: false,
     error: null,
-    currentQuestionIndex: 0
+    currentQuestionIndex: 0,
+    userAnswers: [],
+    isSaving: false,
+    report: null,
+    isGeneratingReport: false,
+    reportError: null
 }
 
 
@@ -63,6 +78,50 @@ const interviewSlice = createSlice({
             if (state.currentQuestionIndex > 0) {
                 state.currentQuestionIndex -= 1;
             }
+        },
+        saveAnswer: (state, action: PayloadAction<{ questionIndex: number; answer: string }>) => {
+            const { questionIndex, answer } = action.payload;
+            const question = state.questions[questionIndex];
+            if (question) {
+                // Ensure userAnswers is initialized as an array
+                if (!state.userAnswers) {
+                    state.userAnswers = [];
+                }
+                
+                // Remove existing answer for this question if it exists
+                state.userAnswers = state.userAnswers.filter(
+                    (userAnswer) => userAnswer.question !== question.question
+                );
+                // Add new answer
+                state.userAnswers.push({
+                    question: question.question,
+                    humanAnswer: answer
+                });
+            }
+        },
+        setSaving: (state, action: PayloadAction<boolean>) => {
+            state.isSaving = action.payload;
+        },
+        clearUserAnswers: (state) => {
+            state.userAnswers = [];
+        },
+        initializeUserAnswers: (state) => {
+            if (!state.userAnswers) {
+                state.userAnswers = [];
+            }
+        },
+        setReport: (state, action: PayloadAction<InterviewReport | null>) => {
+            state.report = action.payload;
+        },
+        setGeneratingReport: (state, action: PayloadAction<boolean>) => {
+            state.isGeneratingReport = action.payload;
+        },
+        setReportError: (state, action: PayloadAction<string | null>) => {
+            state.reportError = action.payload;
+        },
+        clearReport: (state) => {
+            state.report = null;
+            state.reportError = null;
         }
 
     },
@@ -81,6 +140,19 @@ const interviewSlice = createSlice({
             .addCase(generateInterviewQuestions.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(generateInterviewReport.pending, (state) => {
+                state.isGeneratingReport = true;
+                state.reportError = null;
+            })
+            .addCase(generateInterviewReport.fulfilled, (state, action) => {
+                state.isGeneratingReport = false;
+                state.report = action.payload;
+                state.reportError = null;
+            })
+            .addCase(generateInterviewReport.rejected, (state, action) => {
+                state.isGeneratingReport = false;
+                state.reportError = action.payload as string;
             });
     }
 })
@@ -96,7 +168,15 @@ export const {
     setCurrentQuestionIndex,
     clearQuestions,
     nextQuestion,
-    previousQuestion
+    previousQuestion,
+    saveAnswer,
+    setSaving,
+    clearUserAnswers,
+    initializeUserAnswers,
+    setReport,
+    setGeneratingReport,
+    setReportError,
+    clearReport
 } = interviewSlice.actions;
 
 export default interviewSlice.reducer;

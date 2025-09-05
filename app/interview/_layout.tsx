@@ -5,6 +5,12 @@ const Layout = () => {
     return (
        <Stack  screenOptions={{headerShown:false}}>
         <Stack.Screen name='index'/>
+        <Stack.Screen 
+          name='questions' 
+          options={{
+            headerBackButtonMenuEnabled: false,
+          }}
+        />
        </Stack>
     );
 }

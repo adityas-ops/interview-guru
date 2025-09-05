@@ -1,5 +1,5 @@
 import { RootState } from "@/store";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -98,8 +98,8 @@ const HomeScreen = () => {
         contentContainerStyle={{ flexGrow: 1 }}
       >
         {/* document upload */}
-        {/* <TouchableOpacity onPress={()=>{
-          router.push("/homeRoutes/resumeUpload");
+         <TouchableOpacity onPress={()=>{
+          router.push("/interview/questions");
         }} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.iconContainer}>
             <AntDesign name="upload" size={20} color="#04a256ff" />
@@ -117,8 +117,9 @@ const HomeScreen = () => {
               color="#939090ff"
             />
           </View>
-        </TouchableOpacity> */}
+        </TouchableOpacity> 
         {/* choose domain */}
+
         <TouchableOpacity onPress={()=>router.push(domainData ? "/homeRoutes/domainSelection/editDomain" : "/homeRoutes/chooseDomain")} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.SkillIconContainer}>
             {/* <AntDesign name="upload" size={20} color="#04a256ff" /> */}

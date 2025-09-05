@@ -1,37 +1,157 @@
+import ReportCard from '@/components/ReportCard';
+import { InterviewReport } from '@/services/aiService';
+import { RootState } from '@/store';
+import { clearReport } from '@/store/interviewSlice';
+import { generateInterviewReport } from '@/store/interviewThunks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import { StatusBar } from "expo-status-bar";
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ReportScreen = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { report, isGeneratingReport, reportError } = useSelector((state: RootState) => state.interview);
+  const [reports, setReports] = useState<InterviewReport[]>([]);
+
+  // Load reports from AsyncStorage on component mount
+  useEffect(() => {
+    loadReports();
+  }, []);
+
+  // Add new report to the list when generated
+  useEffect(() => {
+    if (report) {
+      addReportToStorage(report);
+      // Clear the report from Redux state to prevent duplicates
+      dispatch(clearReport());
+    }
+  }, [report, dispatch]);
+
+  const loadReports = async () => {
+    try {
+      const storedReports = await AsyncStorage.getItem('interview_reports');
+      if (storedReports) {
+        setReports(JSON.parse(storedReports));
+      }
+    } catch (error) {
+      console.error('Error loading reports:', error);
+    }
+  };
+
+  const addReportToStorage = async (newReport: InterviewReport) => {
+    try {
+      // Check if report already exists to prevent duplicates
+      const existingReport = reports.find(r => r.completedAt === newReport.completedAt);
+      if (existingReport) {
+        return; // Don't add duplicate
+      }
+      
+      const updatedReports = [newReport, ...reports];
+      setReports(updatedReports);
+      await AsyncStorage.setItem('interview_reports', JSON.stringify(updatedReports));
+    } catch (error) {
+      console.error('Error saving report:', error);
+    }
+  };
+
+  const deleteReport = async (reportToDelete: InterviewReport) => {
+    try {
+      const updatedReports = reports.filter(r => r.completedAt !== reportToDelete.completedAt);
+      setReports(updatedReports);
+      await AsyncStorage.setItem('interview_reports', JSON.stringify(updatedReports));
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      Alert.alert('Error', 'Failed to delete report. Please try again.');
+    }
+  };
+
+  const handleDeleteReport = (reportToDelete: InterviewReport) => {
+    Alert.alert(
+      'Delete Report',
+      'Are you sure you want to delete this report? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteReport(reportToDelete),
+        },
+      ]
+    );
+  };
+
+  const handleGenerateReport = async () => {
+    try {
+      await dispatch(generateInterviewReport() as any);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to generate report. Please try again.');
+    }
+  };
+
+  const handleReportPress = (report: InterviewReport) => {
+    // Navigate to the report details screen with the report data
+    router.push({
+      pathname: '/reportDetails',
+      params: {
+        reportData: JSON.stringify(report)
+      }
+    });
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Reports</Text>
-        <Text style={styles.subtitle}>Your Interview Analytics</Text>
-        
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Performance Overview</Text>
-          <Text style={styles.cardText}>
-            Track your interview performance and identify areas for improvement.
-          </Text>
+    <SafeAreaView edges={['top']} style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Interview Reports</Text>
+        <Text style={styles.subtitle}>Track your progress and improve your skills</Text>
+      </View>
+
+      {isGeneratingReport && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Generating your report...</Text>
         </View>
-        
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Progress Tracking</Text>
-          <Text style={styles.cardText}>
-            Monitor your learning progress and skill development over time.
-          </Text>
+      )}
+
+      {reportError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{reportError}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleGenerateReport}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
         </View>
-        
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Analytics Dashboard</Text>
-          <Text style={styles.cardText}>
-            Detailed insights into your interview preparation journey.
-          </Text>
-        </View>
+      )}
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {reports.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No Reports Yet</Text>
+            <Text style={styles.emptyText}>
+              Complete an interview to see your detailed performance report and learning suggestions.
+            </Text>
+            <TouchableOpacity style={styles.startInterviewButton} onPress={() => {}}>
+              <Text style={styles.startInterviewButtonText}>Start Interview</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.reportsContainer}>
+            {reports.map((report, index) => (
+              <ReportCard
+                key={`${report.completedAt}-${index}`}
+                report={report}
+                onPress={() => handleReportPress(report)}
+                onDelete={() => handleDeleteReport(report)}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
-        <StatusBar style='dark'/>
+      <StatusBar style='dark'/>
     </SafeAreaView>
   );
 };
@@ -39,52 +159,109 @@ const ReportScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
   },
   scrollView: {
     flex: 1,
+    paddingHorizontal: 20,
   },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
+  loadingContainer: {
+    backgroundColor: '#fef3c7',
+    padding: 16,
+    margin: 20,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f59e0b',
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+  loadingText: {
+    fontSize: 16,
+    color: '#92400e',
+    fontWeight: '500',
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 30,
-    textAlign: 'center',
+  errorContainer: {
+    backgroundColor: '#fee2e2',
+    padding: 16,
+    margin: 20,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ef4444',
   },
-  card: {
-    backgroundColor: 'white',
-    padding: 20,
+  errorText: {
+    fontSize: 14,
+    color: '#dc2626',
+    marginBottom: 12,
+  },
+  retryButton: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  startInterviewButton: {
+    backgroundColor: '#667eea',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: '#667eea',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+  startInterviewButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
   },
-  cardText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+  reportsContainer: {
+    paddingVertical: 20,
   },
 });
 
