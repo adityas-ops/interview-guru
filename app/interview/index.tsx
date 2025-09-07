@@ -1,6 +1,12 @@
 import AnimateView from "@/components/AnimateView";
+import Loader from "@/components/Loader";
 import { AppDispatch, RootState } from "@/store";
-import { clearLevel, clearNumberOfQuestions, setLevel, setNumberOfQuestions } from "@/store/interviewSlice";
+import {
+  clearLevel,
+  clearNumberOfQuestions,
+  setLevel,
+  setNumberOfQuestions,
+} from "@/store/interviewSlice";
 import { generateInterviewQuestions } from "@/store/interviewThunks";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -8,11 +14,14 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,8 +36,7 @@ const Index = () => {
   const [selectedLevel, setSelectedLevel] = useState<
     "easy" | "medium" | "hard" | null
   >(null);
-  const [selectedQuestions, setSelectedQuestions] =
-    useState<number>(0);
+  const [selectedQuestions, setSelectedQuestions] = useState<number>(0);
 
   const levels = [
     { key: "easy", label: "Easy", locked: false },
@@ -85,13 +93,15 @@ const Index = () => {
         if (generateInterviewQuestions.rejected.match(resultAction)) {
           throw new Error(resultAction.payload as string);
         }
-        
+
         // Navigate to interview questions screen
-        router.push('/interview/questions');
+        router.replace("/interview/questions");
       } catch (error) {
         Alert.alert(
           "Error",
-          error instanceof Error ? error.message : "Failed to generate questions. Please try again.",
+          error instanceof Error
+            ? error.message
+            : "Failed to generate questions. Please try again.",
           [{ text: "OK" }]
         );
       }
@@ -104,14 +114,21 @@ const Index = () => {
     }
   };
 
+  //   first clear all selected data
+  useEffect(() => {
+    dispatch(clearLevel());
+    dispatch(clearNumberOfQuestions());
+  }, []);
 
-//   first clear all selected data 
-useEffect(()=>{
-    dispatch(clearLevel())
-    dispatch(clearNumberOfQuestions())
-},[])
+  const [loading, setLoading] = useState(true);
 
- 
+  // useEffect(()=>{
+  //   if(isLoading === true){
+  //     setLoading(true)
+  //   }else{
+  //     setLoading(false)
+  //   }
+  // },[isLoading])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -190,7 +207,7 @@ useEffect(()=>{
                   onPress={() =>
                     handleQuestionCountSelect(option.count, option.locked)
                   }
-                //   disabled={option.locked}
+                  //   disabled={option.locked}
                 >
                   <Text
                     style={[
@@ -220,16 +237,22 @@ useEffect(()=>{
           <TouchableOpacity
             style={[
               styles.continueButton,
-              (selectedLevel === null || selectedQuestions === 0 || isLoading) &&
+              (selectedLevel === null ||
+                selectedQuestions === 0 ||
+                isLoading) &&
                 styles.disabledButton,
             ]}
             onPress={handleContinue}
-            disabled={selectedLevel === null || selectedQuestions === 0 || isLoading}
+            disabled={
+              selectedLevel === null || selectedQuestions === 0 || isLoading
+            }
           >
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator color="#fff" size="small" />
-                <Text style={styles.continueButtonText}>Generating Questions...</Text>
+                <Text style={styles.continueButtonText}>
+                  Generating Questions...
+                </Text>
               </View>
             ) : (
               <Text
@@ -245,6 +268,27 @@ useEffect(()=>{
           </TouchableOpacity>
         </ScrollView>
       </AnimateView>
+      <Modal
+        visible={loading}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLoading(false)}
+      >
+          <Pressable
+                // onPress={() => setIsEdit(false)}
+                // className="flex-1 justify-end items-center bg-[#000000cc]"
+                style={{
+                  flex:1,
+                  backgroundColor:"white"
+                }}
+              >
+                <TouchableWithoutFeedback>
+                  <View style={{flex:1}}>
+                    <Loader/>
+                  </View>
+                </TouchableWithoutFeedback>
+                </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
