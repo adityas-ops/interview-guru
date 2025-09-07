@@ -141,7 +141,7 @@ const ReportScreen = () => {
             </Text>
             <TouchableOpacity style={styles.startInterviewButton} onPress={() => {
               router.push({
-                pathname:"/",
+                pathname:"/(tabs)",
                 params:{
                   index:0
                 }

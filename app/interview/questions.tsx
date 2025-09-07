@@ -9,11 +9,12 @@ import {
 } from "@/store/interviewSlice";
 import { generateInterviewReport } from "@/store/interviewThunks";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
+  BackHandler,
   Modal,
   Pressable,
   SafeAreaView,
@@ -73,79 +74,50 @@ const QuestionsScreen = () => {
     }
   }, [questions.length, isLoading, router]);
 
-  // Handle back navigation with confirmation
-  const handleBackPress = useCallback(() => {
+
+
+   const handleBackPress = useCallback(() => {
     if (!isSubmitted) {
-      // Alert.alert(
-      //   "Exit Interview",
-      //   "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
-      //   [
-      //     {
-      //       text: "Cancel",
-      //       style: "cancel",
-      //     },
-      //     {
-      //       text: "Yes, Go Back",
-      //       style: "destructive",
-      //       onPress: () => {
-      //         router.back();
-      //       },
-      //     },
-      //   ],
-      //   { cancelable: false }
-      // );
-      // return true; // Prevent default back behavior
-      router.back();
-    } else {
-      return false; // Allow default back behavior if submitted
+      Alert.alert(
+        "Cannot Go Back",
+        "You cannot go back without answering all questions. Please complete the interview to proceed.",
+        [
+          {
+            text: "Continue Interview",
+            style: "default",
+          },
+        ]
+      );
+      return true;
     }
-  }, [isSubmitted, router]);
+    return false;
+  }, [isSubmitted]);
 
-  //   // Handle mobile back button - using both useEffect and useFocusEffect for reliability
-  //   useEffect(() => {
-  //     const backHandler = BackHandler.addEventListener(
-  //       "hardwareBackPress",
-  //       handleBackPress
-  //     );
-  //     return () => backHandler.remove();
-  //   }, [handleBackPress]);
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackPress
+    );
+    return () => backHandler.remove();
+  }, [handleBackPress]);
 
-  //   // Additional focus effect to ensure back handler is active when screen is focused
-  //   useFocusEffect(
-  //     useCallback(() => {
-  //       const backHandler = BackHandler.addEventListener(
-  //         "hardwareBackPress",
-  //         handleBackPress
-  //       );
-  //       return () => backHandler.remove();
-  //     }, [handleBackPress])
-  //   );
 
-  //   // Use usePreventRemove hook for proper back navigation handling
-  // usePreventRemove(true, ({ data }) => {
-  //   if (!isSubmitted) {
-  //     Alert.alert(
-  //       "Exit Interview",
-  //       "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
-  //       [
-  //         {
-  //           text: "Cancel",
-  //           style: "cancel",
-  //         },
-  //         {
-  //           text: "Yes, Go Back",
-  //           style: "destructive",
-  //           onPress: () => {
-  //             navigation.dispatch(data.action);
-  //           },
-  //         },
-  //       ],
-  //       { cancelable: false }
-  //     );
-  //   } else {
-  //     navigation.dispatch(data.action);
-  //   }
-  // });
+
+  // Prevent screen removal when quiz is not completed
+  usePreventRemove(!isSubmitted, ({ data }) => {
+    Alert.alert(
+      "Cannot Go Back",
+      "You cannot go back without answering all questions. Please complete the interview to proceed.",
+      [
+        {
+          text: "Continue Interview",
+          style: "default",
+        },
+      ]
+    );
+  }); 
+
+
 
   const handlePrevious = () => {
     if (!isFirstQuestion) {
@@ -273,7 +245,7 @@ const QuestionsScreen = () => {
           const reportResult = await dispatch(generateInterviewReport() as any);
           setLoadingModal(false)
           router.replace({
-            pathname: "/",
+            pathname: "/(tabs)",
             params: {
               index: 1,
             },
@@ -288,7 +260,7 @@ const QuestionsScreen = () => {
                 text: "View Report",
                 onPress: () =>
                   router.replace({
-                    pathname: "/",
+                    pathname: "/(tabs)",
                     params: {
                       index: 0,
                     },
@@ -362,12 +334,7 @@ const QuestionsScreen = () => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPress}
-            >
-              <Ionicons name="arrow-back" size={24} color="#007AFF" />
-            </TouchableOpacity>
+     
             <View style={styles.progressContainer}>
               <Text style={styles.progressText}>
                 Question {currentQuestionIndex + 1} of {questions.length}
