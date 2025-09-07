@@ -45,6 +45,7 @@ const Index = () => {
   ];
 
   const questionCounts = [
+     { count: 1, locked: false },
     { count: 10, locked: false },
     { count: 15, locked: false },
     { count: 25, locked: true },
@@ -120,15 +121,15 @@ const Index = () => {
     dispatch(clearNumberOfQuestions());
   }, []);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isLoading);
 
-  // useEffect(()=>{
-  //   if(isLoading === true){
-  //     setLoading(true)
-  //   }else{
-  //     setLoading(false)
-  //   }
-  // },[isLoading])
+  useEffect(()=>{
+    if(isLoading === true){
+      setLoading(true)
+    }else{
+      setLoading(false)
+    }
+  },[isLoading])
 
   return (
     <SafeAreaView style={styles.container}>

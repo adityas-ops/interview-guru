@@ -3,7 +3,7 @@ import { RootState } from '@/store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 interface RecentInterviewsProps {
@@ -102,10 +102,7 @@ const RecentInterviews: React.FC<RecentInterviewsProps> = ({ style }) => {
         </TouchableOpacity> */}
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+      <View
       >
         {interviews.map((interview, index) => (
           <View
@@ -152,7 +149,7 @@ const RecentInterviews: React.FC<RecentInterviewsProps> = ({ style }) => {
             </TouchableOpacity>
           </View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -202,6 +199,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    marginBottom:15
   },
   cardHeader: {
     flexDirection: 'row',

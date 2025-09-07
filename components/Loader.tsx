@@ -5,7 +5,7 @@ import { Animated, Dimensions, StyleSheet, View } from "react-native";
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const Loader = () => {
-  const butterflyPosition = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const butterflyPosition = useRef(new Animated.ValueXY({ x: 200, y: 200 })).current;
   const textFadeAnim = useRef(new Animated.Value(1)).current;
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     height: 350,
   },
   butterFly: {
-    width: 50,
-    height: 50
+    width: 80,
+    height: 80
   },
   textContainer: {
     position: 'absolute',

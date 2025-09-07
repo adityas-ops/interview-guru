@@ -1,38 +1,52 @@
 import AnimateView from "@/components/AnimateView";
 import { RootState } from "@/store";
-import { initializeUserAnswers, nextQuestion, previousQuestion, saveAnswer, setSaving } from "@/store/interviewSlice";
+import {
+  initializeUserAnswers,
+  nextQuestion,
+  previousQuestion,
+  saveAnswer,
+  setSaving,
+} from "@/store/interviewSlice";
 import { generateInterviewReport } from "@/store/interviewThunks";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation, usePreventRemove } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
-  BackHandler,
+  Modal,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 // import * as Speech from 'expo-speech'; // Uncomment when expo-speech is installed
+import Loader from "@/components/Loader";
 import { saveInterviewResult } from "@/services/firebaseService";
 
 const QuestionsScreen = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const navigation = useNavigation();
-  const { questions, currentQuestionIndex, isLoading, userAnswers, isSaving, isGeneratingReport } = useSelector(
-    (state: RootState) => state.interview
-  );
+  const {
+    questions,
+    currentQuestionIndex,
+    isLoading,
+    userAnswers,
+    isSaving,
+    isGeneratingReport,
+  } = useSelector((state: RootState) => state.interview);
   const { user } = useSelector((state: RootState) => state.auth);
-  
+
   // Ensure userAnswers is always an array
   const safeUserAnswers = userAnswers || [];
-  
+
   const [answerText, setAnswerText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [showHints, setShowHints] = useState(false);
@@ -42,12 +56,7 @@ const QuestionsScreen = () => {
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  console.log("questions list ",questions)
-  console.log("userAnswers:", userAnswers)
-  console.log("safeUserAnswers:", safeUserAnswers)
-  console.log("currentQuestionIndex:", currentQuestionIndex)
-  console.log("isLastQuestion:", isLastQuestion)
-  console.log("questions.length:", questions.length)
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     if (!isLoading && questions.length === 0) {
@@ -66,69 +75,77 @@ const QuestionsScreen = () => {
 
   // Handle back navigation with confirmation
   const handleBackPress = useCallback(() => {
-    console.log("Back button pressed - showing confirmation alert");
-    Alert.alert(
-      "Exit Interview",
-      "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => console.log("User cancelled back navigation"),
-        },
-        {
-          text: "Yes, Go Back",
-          style: "destructive",
-          onPress: () => {
-            console.log("User confirmed back navigation");
-            router.back();
-          },
-        },
-      ],
-      { cancelable: false }
-    );
-    return true; // Prevent default back behavior
-  }, [router]);
+    if (!isSubmitted) {
+      // Alert.alert(
+      //   "Exit Interview",
+      //   "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
+      //   [
+      //     {
+      //       text: "Cancel",
+      //       style: "cancel",
+      //     },
+      //     {
+      //       text: "Yes, Go Back",
+      //       style: "destructive",
+      //       onPress: () => {
+      //         router.back();
+      //       },
+      //     },
+      //   ],
+      //   { cancelable: false }
+      // );
+      // return true; // Prevent default back behavior
+      router.back();
+    } else {
+      return false; // Allow default back behavior if submitted
+    }
+  }, [isSubmitted, router]);
 
-  // Handle mobile back button - using both useEffect and useFocusEffect for reliability
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-    return () => backHandler.remove();
-  }, [handleBackPress]);
+  //   // Handle mobile back button - using both useEffect and useFocusEffect for reliability
+  //   useEffect(() => {
+  //     const backHandler = BackHandler.addEventListener(
+  //       "hardwareBackPress",
+  //       handleBackPress
+  //     );
+  //     return () => backHandler.remove();
+  //   }, [handleBackPress]);
 
-  // Additional focus effect to ensure back handler is active when screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      const backHandler = BackHandler.addEventListener("hardwareBackPress", handleBackPress);
-      return () => backHandler.remove();
-    }, [handleBackPress])
-  );
+  //   // Additional focus effect to ensure back handler is active when screen is focused
+  //   useFocusEffect(
+  //     useCallback(() => {
+  //       const backHandler = BackHandler.addEventListener(
+  //         "hardwareBackPress",
+  //         handleBackPress
+  //       );
+  //       return () => backHandler.remove();
+  //     }, [handleBackPress])
+  //   );
 
-  // Use usePreventRemove hook for proper back navigation handling
-  usePreventRemove(true, ({ data }) => {
-    // Show confirmation alert when user tries to go back
-    Alert.alert(
-      "Exit Interview",
-      "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => console.log("User cancelled back navigation"),
-        },
-        {
-          text: "Yes, Go Back",
-          style: "destructive",
-          onPress: () => {
-            console.log("User confirmed back navigation");
-            // Allow navigation to proceed
-            navigation.dispatch(data.action);
-          },
-        },
-      ],
-      { cancelable: false }
-    );
-  });
+  //   // Use usePreventRemove hook for proper back navigation handling
+  // usePreventRemove(true, ({ data }) => {
+  //   if (!isSubmitted) {
+  //     Alert.alert(
+  //       "Exit Interview",
+  //       "Are you sure you want to go back? You haven't completed the interview. Please complete the interview.",
+  //       [
+  //         {
+  //           text: "Cancel",
+  //           style: "cancel",
+  //         },
+  //         {
+  //           text: "Yes, Go Back",
+  //           style: "destructive",
+  //           onPress: () => {
+  //             navigation.dispatch(data.action);
+  //           },
+  //         },
+  //       ],
+  //       { cancelable: false }
+  //     );
+  //   } else {
+  //     navigation.dispatch(data.action);
+  //   }
+  // });
 
   const handlePrevious = () => {
     if (!isFirstQuestion) {
@@ -194,13 +211,16 @@ const QuestionsScreen = () => {
   };
 
   const handleSaveAndNext = async () => {
-    console.log("Save and Next clicked");
-    console.log("Current question index:", currentQuestionIndex);
-    console.log("Is last question:", isLastQuestion);
-    console.log("Answer text:", answerText);
-    
+    // console.log("Save and Next clicked");
+    // console.log("Current question index:", currentQuestionIndex);
+    // console.log("Is last question:", isLastQuestion);
+    // console.log("Answer text:", answerText);
+
     if (!answerText.trim()) {
-      Alert.alert("Answer Required", "Please provide an answer before proceeding.");
+      Alert.alert(
+        "Answer Required",
+        "Please provide an answer before proceeding."
+      );
       return;
     }
 
@@ -209,12 +229,14 @@ const QuestionsScreen = () => {
       if (userAnswers === undefined) {
         dispatch(initializeUserAnswers());
       }
-      
+
       // Save the answer
-      dispatch(saveAnswer({ 
-        questionIndex: currentQuestionIndex, 
-        answer: answerText.trim() 
-      }));
+      dispatch(
+        saveAnswer({
+          questionIndex: currentQuestionIndex,
+          answer: answerText.trim(),
+        })
+      );
       console.log("Answer saved successfully");
 
       if (!isLastQuestion) {
@@ -225,46 +247,37 @@ const QuestionsScreen = () => {
       } else {
         // Save to Firebase and complete interview
         dispatch(setSaving(true));
-        
+
         if (!user?.uid) {
           throw new Error("User not authenticated");
         }
-
+        setIsSubmitted(true);
         await saveInterviewResult({
           userId: user.uid,
-          userAnswers: [...safeUserAnswers, {
-            question: currentQuestion.question,
-            humanAnswer: answerText.trim()
-          }],
+          userAnswers: [
+            ...safeUserAnswers,
+            {
+              question: currentQuestion.question,
+              humanAnswer: answerText.trim(),
+            },
+          ],
           totalQuestions: questions.length,
           level: questions[0]?.difficulty || "easy",
-          completedAt: new Date()
+          completedAt: new Date(),
         });
 
         dispatch(setSaving(false));
-        
+
         // Generate AI report
         try {
           const reportResult = await dispatch(generateInterviewReport() as any);
-          
-          Alert.alert(
-            "Interview Complete",
-            "You have completed all questions! Your detailed report with learning suggestions is ready.",
-            [
-              {
-                text: "View Report",
-                onPress: () => {
-                  // Navigate to report details with the generated report
-                  router.push({
-                    pathname: '/reportDetails',
-                    params: {
-                      reportData: JSON.stringify(reportResult.payload)
-                    }
-                  });
-                },
-              },
-            ]
-          );
+          setLoadingModal(false)
+          router.replace({
+            pathname: "/",
+            params: {
+              index: 1,
+            },
+          });
         } catch (error) {
           console.error("Error generating report:", error);
           Alert.alert(
@@ -273,7 +286,13 @@ const QuestionsScreen = () => {
             [
               {
                 text: "View Report",
-                onPress: () => router.push("/(tabs)/report"),
+                onPress: () =>
+                  router.replace({
+                    pathname: "/",
+                    params: {
+                      index: 0,
+                    },
+                  }),
               },
             ]
           );
@@ -281,13 +300,20 @@ const QuestionsScreen = () => {
       }
     } catch (error) {
       console.error("Error in handleSaveAndNext:", error);
-      Alert.alert(
-        "Error",
-        "Something went wrong. Please try again.",
-        [{ text: "OK" }]
-      );
+      Alert.alert("Error", "Something went wrong. Please try again.", [
+        { text: "OK" },
+      ]);
     }
   };
+
+  const [loadingModal, setLoadingModal] = useState(isGeneratingReport);
+  useEffect(() => {
+    if (isGeneratingReport === true) {
+      setLoadingModal(true);
+    } else {
+      setLoadingModal(false);
+    }
+  }, [isGeneratingReport]);
 
   const getQuestionTypeColor = (type: string) => {
     switch (type) {
@@ -330,7 +356,10 @@ const QuestionsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <AnimateView>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity
@@ -348,7 +377,9 @@ const QuestionsScreen = () => {
                   style={[
                     styles.progressFill,
                     {
-                      width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`,
+                      width: `${
+                        ((currentQuestionIndex + 1) / questions.length) * 100
+                      }%`,
                     },
                   ]}
                 />
@@ -363,7 +394,9 @@ const QuestionsScreen = () => {
               <View
                 style={[
                   styles.typeBadge,
-                  { backgroundColor: getQuestionTypeColor(currentQuestion.type) },
+                  {
+                    backgroundColor: getQuestionTypeColor(currentQuestion.type),
+                  },
                 ]}
               >
                 <Text style={styles.badgeText}>
@@ -373,7 +406,11 @@ const QuestionsScreen = () => {
               <View
                 style={[
                   styles.difficultyBadge,
-                  { backgroundColor: getDifficultyColor(currentQuestion.difficulty) },
+                  {
+                    backgroundColor: getDifficultyColor(
+                      currentQuestion.difficulty
+                    ),
+                  },
                 ]}
               >
                 <Text style={styles.badgeText}>
@@ -408,7 +445,10 @@ const QuestionsScreen = () => {
                   autoCapitalize="sentences"
                 />
                 <TouchableOpacity
-                  style={[styles.speechButton, isRecording && styles.speechButtonActive]}
+                  style={[
+                    styles.speechButton,
+                    isRecording && styles.speechButtonActive,
+                  ]}
                   onPress={handleSpeechToText}
                 >
                   <Ionicons
@@ -436,7 +476,7 @@ const QuestionsScreen = () => {
                     {showHints ? "Hide Hints" : "Show Hints"}
                   </Text>
                 </TouchableOpacity>
-                
+
                 {showHints && (
                   <View style={styles.hintsSection}>
                     <Text style={styles.hintsTitle}>Hints:</Text>
@@ -478,12 +518,28 @@ const QuestionsScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.navButton, styles.nextButton, (isSaving || isGeneratingReport) && styles.disabledButton]}
+              style={[
+                styles.navButton,
+                styles.nextButton,
+                (isSaving || isGeneratingReport) && styles.disabledButton,
+              ]}
               onPress={handleSaveAndNext}
               disabled={isSaving || isGeneratingReport}
             >
-              <Text style={[styles.navButtonText, styles.nextButtonText, (isSaving || isGeneratingReport) && styles.disabledButtonText]}>
-                {isSaving ? "Saving..." : isGeneratingReport ? "Generating Report..." : isLastQuestion ? "Save & Finish" : "Save & Next"}
+              <Text
+                style={[
+                  styles.navButtonText,
+                  styles.nextButtonText,
+                  (isSaving || isGeneratingReport) && styles.disabledButtonText,
+                ]}
+              >
+                {isSaving
+                  ? "Saving..."
+                  : isGeneratingReport
+                  ? "Generating Report..."
+                  : isLastQuestion
+                  ? "Save & Finish"
+                  : "Save & Next"}
               </Text>
               {!isLastQuestion && !isSaving && !isGeneratingReport && (
                 <Ionicons name="chevron-forward" size={20} color="#ffffff" />
@@ -492,6 +548,26 @@ const QuestionsScreen = () => {
           </View>
         </ScrollView>
       </AnimateView>
+      {/* loading model */}
+      <Modal
+        visible={loadingModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLoadingModal(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <TouchableWithoutFeedback>
+            <View style={{ flex: 1 }}>
+              <Loader />
+            </View>
+          </TouchableWithoutFeedback>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -552,9 +628,9 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#667eea",
+    backgroundColor: "#007AFF",
     borderRadius: 3,
-    shadowColor: "#667eea",
+    shadowColor: "#007AFF",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -564,21 +640,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   questionCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 28,
     marginTop: 20,
     marginBottom: 32,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: "#f1f5f9",
   },
   questionMeta: {
     flexDirection: "row",
@@ -634,7 +697,7 @@ const styles = StyleSheet.create({
   },
   answerInputSection: {
     backgroundColor: "#f7fafc",
-    padding: 20,
+    padding: 15,
     borderRadius: 16,
     marginBottom: 20,
     borderLeftWidth: 4,
@@ -652,12 +715,14 @@ const styles = StyleSheet.create({
   answerInput: {
     backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#071d3aff",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     color: "#2d3748",
-    minHeight: 100,
+    minHeight: 140,
+    maxHeight: 250,
+    height: "auto",
     textAlignVertical: "top",
   },
   speechButton: {
@@ -735,7 +800,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 18,
+    paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 16,
     gap: 10,
@@ -754,7 +819,7 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
   },
   nextButton: {
-    backgroundColor: "#667eea",
+    backgroundColor: "#007AFF",
   },
   disabledButton: {
     backgroundColor: "#f7fafc",

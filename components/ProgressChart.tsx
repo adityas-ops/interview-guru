@@ -13,7 +13,6 @@ interface ProgressChartProps {
 const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
   const [asyncStorageReports, setAsyncStorageReports] = useState<InterviewReport[]>([]);
   
-  // Get reports from Firebase state - use shallow equality to prevent re-renders
   const firebaseReports = useSelector((state: RootState) => state.firebase.userData?.reports || [], (left, right) => {
     if (left.length !== right.length) return false;
     return left.every((report, index) => 
@@ -25,7 +24,6 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
   const interviewReport = useSelector((state: RootState) => state.interview.report);
   const firebaseDataLoaded = useSelector((state: RootState) => state.firebase.isDataLoaded);
 
-  // Load reports from AsyncStorage
   useEffect(() => {
     const loadReports = async () => {
       try {
@@ -41,14 +39,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     loadReports();
   }, []);
 
-  console.log('firebaseReports', firebaseReports);
-  console.log('interviewReport', interviewReport);
-  console.log('firebaseDataLoaded', firebaseDataLoaded);
-  console.log('asyncStorageReports', asyncStorageReports);
-
-  // Memoize reports to prevent infinite re-renders - check all sources
   const reports = useMemo(() => {
-    // Priority: Firebase reports > AsyncStorage reports > current interview report
     if (firebaseReports.length > 0) {
       return firebaseReports;
     }
@@ -58,7 +49,6 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     return interviewReport ? [interviewReport] : [];
   }, [firebaseReports, asyncStorageReports, interviewReport]);
 
-  // Memoize the progress data calculation - this is now the only state
   const progressData = useMemo(() => {
     if (reports.length === 0) {
       return {
@@ -69,7 +59,6 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
       };
     }
 
-    // Sort reports by completion date (newest first)
     const sortedReports = [...reports].sort((a, b) => 
       new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     );
@@ -78,7 +67,6 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     const averageScore = totalScore / sortedReports.length;
     const lastScore = sortedReports[0]?.overallScore || 0;
 
-    // Calculate improvement trend (compare last 3 vs previous 3)
     let improvementTrend = 0;
     if (sortedReports.length >= 6) {
       const recent3 = sortedReports.slice(0, 3);
@@ -87,9 +75,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
       const previousAvg = previous3.reduce((sum, r) => sum + r.overallScore, 0) / 3;
       improvementTrend = recentAvg - previousAvg;
     } else if (sortedReports.length >= 2) {
-      const recent = sortedReports[0].overallScore;
-      const previous = sortedReports[1].overallScore;
-      improvementTrend = recent - previous;
+      improvementTrend = sortedReports[0].overallScore - sortedReports[1].overallScore;
     }
 
     return {
@@ -100,16 +86,17 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     };
   }, [reports]);
 
+  // New score colors with no yellow: teal, purple, red
   const getScoreColor = (score: number) => {
-    if (score >= 8) return '#10B981'; // Green
-    if (score >= 6) return '#F59E0B'; // Yellow
-    return '#EF4444'; // Red
+    if (score >= 8) return '#14B8A6'; // Teal-500
+    if (score >= 6) return '#8B5CF6'; // Purple-500
+    return '#EF4444'; // Red-600
   };
 
   const getTrendIcon = () => {
-    if (progressData.improvementTrend > 0) return '📈';
-    if (progressData.improvementTrend < 0) return '📉';
-    return '➡️';
+    if (progressData.improvementTrend > 0) return '⬆️';
+    if (progressData.improvementTrend < 0) return '⬇️';
+    return '➖';
   };
 
   const getTrendText = () => {
@@ -155,7 +142,9 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
         </View>
 
         <View style={styles.trendContainer}>
-          <Text style={styles.trendIcon}>{getTrendIcon()}</Text>
+          <Text style={[styles.trendIcon, { color: getScoreColor(progressData.improvementTrend >= 0 ? 8 : 4) }]}>
+            {getTrendIcon()}
+          </Text>
           <Text style={styles.trendText}>{getTrendText()}</Text>
           {progressData.improvementTrend !== 0 && (
             <Text style={styles.trendValue}>
@@ -168,7 +157,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBarBackground}>
             <LinearGradient
-              colors={[getScoreColor(progressData.averageScore), getScoreColor(progressData.averageScore) + '80']}
+              colors={['#14B8A6', '#3B82F6']} // teal to blue gradient
               style={[styles.progressBarFill, { width: `${(progressData.averageScore / 10) * 100}%` }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -185,97 +174,99 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: '#fff', // white background
+    borderRadius: 14,
+    padding: 24,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 5,
   },
   header: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#1e293b', // dark slate
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 15,
+    color: '#64748b', // slate gray
+    fontWeight: '500',
   },
   progressContainer: {
-    gap: 16,
+    gap: 20,
   },
   scoreRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
   },
   scoreItem: {
     alignItems: 'center',
     flex: 1,
   },
   scoreLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: 13,
+    color: '#64748b', // slate gray
+    marginBottom: 6,
     textAlign: 'center',
   },
   scoreValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
   },
   trendContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
   },
   trendIcon: {
-    fontSize: 20,
+    fontSize: 22,
   },
   trendText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#374151',
+    color: '#334155', // dark slate
   },
   trendValue: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#64748b', // slate gray
   },
   progressBarContainer: {
-    gap: 8,
+    gap: 10,
   },
   progressBarBackground: {
-    height: 8,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: '#e2e8f0', // light slate
+    borderRadius: 5,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 5,
   },
   progressBarText: {
-    fontSize: 12,
-    color: '#6b7280',
     textAlign: 'center',
+    fontSize: 13,
+    color: '#64748b', // slate gray
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 30,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6b7280',
+    fontSize: 17,
+    color: '#94a3b8',
     textAlign: 'center',
   },
 });
