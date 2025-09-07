@@ -1,6 +1,7 @@
 import AnimateView from "@/components/AnimateView";
 import { RootState } from "@/store";
 import {
+  clearAllData,
   initializeUserAnswers,
   nextQuestion,
   previousQuestion,
@@ -61,16 +62,16 @@ const QuestionsScreen = () => {
 
   useEffect(() => {
     if (!isLoading && questions.length === 0) {
-      Alert.alert(
-        "No Questions",
-        "No questions available. Please go back and generate questions first.",
-        [
-          {
-            text: "Go Back",
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      // Alert.alert(
+      //   "No Questions",
+      //   "No questions available. Please go back and generate questions first.",
+      //   [
+      //     {
+      //       text: "Go Back",
+      //       onPress: () => router.back(),
+      //     },
+      //   ]
+      // );
     }
   }, [questions.length, isLoading, router]);
 
@@ -226,13 +227,7 @@ const QuestionsScreen = () => {
         setIsSubmitted(true);
         await saveInterviewResult({
           userId: user.uid,
-          userAnswers: [
-            ...safeUserAnswers,
-            {
-              question: currentQuestion.question,
-              humanAnswer: answerText.trim(),
-            },
-          ],
+          userAnswers: safeUserAnswers,
           totalQuestions: questions.length,
           level: questions[0]?.difficulty || "easy",
           completedAt: new Date(),
@@ -244,6 +239,8 @@ const QuestionsScreen = () => {
         try {
           const reportResult = await dispatch(generateInterviewReport() as any);
           setLoadingModal(false)
+          // Clear all interview data after successful completion
+          dispatch(clearAllData());
           router.replace({
             pathname: "/(tabs)",
             params: {
@@ -252,6 +249,8 @@ const QuestionsScreen = () => {
           });
         } catch (error) {
           console.error("Error generating report:", error);
+          // Clear all interview data even if report generation fails
+          dispatch(clearAllData());
           Alert.alert(
             "Interview Complete",
             "You have completed all questions! Great job!",

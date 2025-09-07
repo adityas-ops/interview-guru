@@ -16,6 +16,29 @@ const RecentInterviews: React.FC<RecentInterviewsProps> = ({ style }) => {
   const userData = useSelector((state: RootState) => state.auth.user);
   const firebaseDataLoaded = useSelector((state: RootState) => state.firebase.isDataLoaded);
 
+  // Function to clean up duplicate answers
+  const cleanDuplicateAnswers = (interview: FirebaseInterviewData) => {
+    if (!interview.userAnswers || interview.userAnswers.length === 0) {
+      return interview;
+    }
+
+    const uniqueAnswers = [];
+    const seenQuestions = new Set();
+
+    for (const answer of interview.userAnswers) {
+      const normalizedQuestion = answer.question.trim();
+      if (!seenQuestions.has(normalizedQuestion)) {
+        seenQuestions.add(normalizedQuestion);
+        uniqueAnswers.push(answer);
+      }
+    }
+
+    return {
+      ...interview,
+      userAnswers: uniqueAnswers
+    };
+  };
+
   const loadInterviews = useCallback(async () => {
     if (!userData?.uid) {
       setLoading(false);
@@ -25,7 +48,38 @@ const RecentInterviews: React.FC<RecentInterviewsProps> = ({ style }) => {
     try {
       setLoading(true);
       const userInterviews = await fetchUserInterviews(userData.uid);
-      setInterviews(userInterviews.slice(0, 3)); // Show only last 3 interviews
+      console.log('Loaded interviews:', userInterviews);
+      userInterviews.forEach((interview, index) => {
+        console.log(`Interview ${index}:`, {
+          id: interview.id,
+          questionsCount: interview.questions?.length || 0,
+          answersCount: interview.userAnswers?.length || 0,
+          questions: interview.questions?.map(q => q.question).slice(0, 3), // First 3 questions
+          answers: interview.userAnswers?.map(a => a.question).slice(0, 3), // First 3 answers
+          allAnswers: interview.userAnswers?.map(a => ({
+            question: a.question,
+            answer: a.humanAnswer?.substring(0, 50) + '...' // First 50 chars of answer
+          }))
+        });
+        
+        // Check for duplicate questions in answers
+        if (interview.userAnswers && interview.userAnswers.length > 0) {
+          const questionCounts: { [key: string]: number } = {};
+          interview.userAnswers.forEach(answer => {
+            const question = answer.question.trim();
+            questionCounts[question] = (questionCounts[question] || 0) + 1;
+          });
+          
+          const duplicates = Object.entries(questionCounts).filter(([_, count]) => (count as number) > 1);
+          if (duplicates.length > 0) {
+            console.warn(`Found duplicate answers for questions:`, duplicates);
+          }
+        }
+      });
+      
+      // Clean up duplicate answers and show only last 3 interviews
+      const cleanedInterviews = userInterviews.map(cleanDuplicateAnswers);
+      setInterviews(cleanedInterviews.slice(0, 3));
     } catch (error) {
       console.error('Error loading interviews:', error);
       setInterviews([]); // Set empty array on error

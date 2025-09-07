@@ -3,11 +3,12 @@ import RecentInterviews from "@/components/RecentInterviews";
 import { RootState } from "@/store";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Alert,
   ScrollView,
@@ -21,6 +22,7 @@ import { useSelector } from "react-redux";
 const HomeScreen = () => {
   const userData = useSelector((state: RootState) => state.auth.user);
   const domainData = useSelector((state: RootState) => state.domain.currentDomain);
+  const [refreshKey, setRefreshKey] = React.useState(0);
   const myDate = new Date();
   const hours = myDate.getHours();
   let greet;
@@ -49,6 +51,14 @@ const HomeScreen = () => {
     };
     return fieldNames[field] || 'Developer';
   };
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      // Force refresh of RecentInterviews component
+      setRefreshKey(prev => prev + 1);
+    }, [])
+  );
 
   const handleStartInterview = () => {
     if (!domainData || !domainData.field) {
@@ -172,7 +182,7 @@ const HomeScreen = () => {
         <ProgressChart />
         
         {/* Recent Interviews */}
-        <RecentInterviews />
+        <RecentInterviews key={refreshKey} />
       </ScrollView>
       <StatusBar style="light" />
     </View>

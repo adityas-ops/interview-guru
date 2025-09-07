@@ -2,10 +2,9 @@ import AnimateView from "@/components/AnimateView";
 import Loader from "@/components/Loader";
 import { AppDispatch, RootState } from "@/store";
 import {
-  clearLevel,
-  clearNumberOfQuestions,
+  clearAllData,
   setLevel,
-  setNumberOfQuestions,
+  setNumberOfQuestions
 } from "@/store/interviewSlice";
 import { generateInterviewQuestions } from "@/store/interviewThunks";
 import { Ionicons } from "@expo/vector-icons";
@@ -117,8 +116,7 @@ const Index = () => {
 
   //   first clear all selected data
   useEffect(() => {
-    dispatch(clearLevel());
-    dispatch(clearNumberOfQuestions());
+    dispatch(clearAllData());
   }, []);
 
   const [loading, setLoading] = useState(isLoading);

@@ -104,6 +104,13 @@ export const saveInterviewToFirebase = createAsyncThunk(
         createdAt: new Date().toISOString(),
       };
 
+      console.log('Saving interview to Firebase:', {
+        questionsCount: interviewData.questions?.length || 0,
+        answersCount: interviewData.userAnswers?.length || 0,
+        questions: interviewData.questions?.map(q => q.question).slice(0, 3),
+        answers: interviewData.userAnswers?.map(a => a.question).slice(0, 3)
+      });
+
       const docRef = await addDoc(collection(db, 'interviews'), interviewData);
       
       return { id: docRef.id, ...interviewData };

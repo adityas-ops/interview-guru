@@ -89,14 +89,20 @@ const interviewSlice = createSlice({
                 }
                 
                 // Remove existing answer for this question if it exists
+                // Use trim() and normalize whitespace for better comparison
+                const normalizedQuestion = question.question.trim();
                 state.userAnswers = state.userAnswers.filter(
-                    (userAnswer) => userAnswer.question !== question.question
+                    (userAnswer) => userAnswer.question.trim() !== normalizedQuestion
                 );
+                
                 // Add new answer
                 state.userAnswers.push({
                     question: question.question,
                     humanAnswer: answer
                 });
+                
+                // Debug logging to track answer count
+                console.log(`Answer saved for question ${questionIndex + 1}/${state.questions.length}. Total answers: ${state.userAnswers.length}`);
             }
         },
         setSaving: (state, action: PayloadAction<boolean>) => {
