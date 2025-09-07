@@ -36,7 +36,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, onDelete }) =>
 
   return (
     <View style={styles.cardContainer}>
-      <TouchableOpacity style={styles.card} onPress={onPress}>
+      <View style={styles.card}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Interview Report</Text>
@@ -65,18 +65,26 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, onDelete }) =>
         
         <View style={styles.strengthsContainer}>
           <Text style={styles.strengthsLabel}>Key Strengths:</Text>
-          <Text style={styles.strengthsText} numberOfLines={1}>
+          {
+            report.strengths.length > 0 ?
+              <Text style={styles.strengthsText} numberOfLines={1}>
             {report.strengths.slice(0, 2).join(', ')}
             {report.strengths.length > 2 && '...'}
           </Text>
+          :
+           <Text style={styles.strengthsText} numberOfLines={1}>
+            None
+           </Text>
+          }
+        
         </View>
       </View>
       
-      <View style={styles.footer}>
+      <TouchableOpacity onPress={onPress} style={styles.footer}>
         <Text style={styles.viewDetails}>View Details</Text>
-        <Ionicons name="chevron-forward" size={16} color="#667eea" />
-      </View>
+        <Ionicons name="chevron-forward" size={16} color="#06a453ff" />
       </TouchableOpacity>
+      </View>
       
       <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
         <Ionicons name="trash-outline" size={20} color="#EF4444" />
@@ -217,9 +225,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   viewDetails: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#667eea',
+    color: '#06a453ff',
   },
 });
 

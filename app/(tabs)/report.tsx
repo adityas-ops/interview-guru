@@ -139,7 +139,14 @@ const ReportScreen = () => {
             <Text style={styles.emptyText}>
               Complete an interview to see your detailed performance report and learning suggestions.
             </Text>
-            <TouchableOpacity style={styles.startInterviewButton} onPress={() => {}}>
+            <TouchableOpacity style={styles.startInterviewButton} onPress={() => {
+              router.push({
+                pathname:"/",
+                params:{
+                  index:0
+                }
+              })
+            }}>
               <Text style={styles.startInterviewButtonText}>Start Interview</Text>
             </TouchableOpacity>
           </View>

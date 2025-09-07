@@ -42,6 +42,7 @@ const SettingsScreen = () => {
     }
   };
 
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -153,10 +154,22 @@ const RouteCard: React.FC<RouteCardProps> = ({
   iconBackground,
   routePath,
 }) => {
+    const warningHandle = ()=>{
+    Alert.alert("Alert", "This feature will coming soon.🤗")
+    // router.push({
+    //   pathname:"/",
+    //   params:{
+    //     index:1
+    //   }
+    // })
+  }
   return (
     <TouchableOpacity
       style={styles.resumeContainer}
-      onPress={() => router.push(routePath)}
+      // onPress={() => router.push(routePath)}
+      onPress={()=>{
+        warningHandle()
+      }}
     >
       <View
         style={[styles.SkillIconContainer, { backgroundColor: iconBackground }]}

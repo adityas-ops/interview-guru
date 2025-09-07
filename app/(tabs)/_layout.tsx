@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { runOnJS, useSharedValue } from 'react-native-reanimated';
@@ -11,6 +12,14 @@ const Layout = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
     const translateX = useSharedValue(0);
+    const {index} = useLocalSearchParams()
+    console.log("index",index)
+
+    useEffect(()=>{
+        if(index){
+            navigateToTab(Number(index))
+        }
+    },[index])
 
     const tabs = [
         { name: 'Home', icon: 'home', component: 'index' },
