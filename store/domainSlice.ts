@@ -1,4 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { saveDomainToFirebase } from "./firebaseThunks";
 
 export interface Skill {
   id: string;
@@ -75,6 +76,20 @@ const domainSlice = createSlice({
         state.isCompleted = false;
       }
     },
+    clearAllData: (state) => {
+      state.currentDomain = null;
+      state.isCompleted = false;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(saveDomainToFirebase.fulfilled, (state, action) => {
+        // Domain data is already updated in the main reducers
+        console.log('Domain data saved to Firebase successfully');
+      })
+      .addCase(saveDomainToFirebase.rejected, (state, action) => {
+        console.error('Failed to save domain data to Firebase:', action.payload);
+      });
   },
 });
 
@@ -86,6 +101,7 @@ export const {
   completeDomainSelection,
   clearDomainData,
   resetDomainSelection,
+  clearAllData,
 } = domainSlice.actions;
 
 export default domainSlice.reducer;

@@ -122,6 +122,19 @@ const interviewSlice = createSlice({
         clearReport: (state) => {
             state.report = null;
             state.reportError = null;
+        },
+        clearAllData: (state) => {
+            state.level = "easy";
+            state.numberOfQuestions = 0;
+            state.questions = [];
+            state.isLoading = false;
+            state.error = null;
+            state.currentQuestionIndex = 0;
+            state.userAnswers = [];
+            state.isSaving = false;
+            state.report = null;
+            state.isGeneratingReport = false;
+            state.reportError = null;
         }
 
     },
@@ -176,7 +189,8 @@ export const {
     setReport,
     setGeneratingReport,
     setReportError,
-    clearReport
+    clearReport,
+    clearAllData
 } = interviewSlice.actions;
 
 export default interviewSlice.reducer;

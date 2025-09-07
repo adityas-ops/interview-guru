@@ -1,5 +1,7 @@
+import { db } from '@/firebase/config';
 import AIService from '@/services/aiService';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { addDoc, collection } from 'firebase/firestore';
 import { RootState } from './index';
 
 export const generateInterviewQuestions = createAsyncThunk(
@@ -64,6 +66,49 @@ export const generateInterviewReport = createAsyncThunk(
       return report;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate report';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const saveInterviewToFirebase = createAsyncThunk(
+  'interview/saveToFirebase',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as RootState;
+      const { domain, interview, auth } = state;
+      
+      if (!auth.user?.uid) {
+        throw new Error('User not authenticated');
+      }
+      
+      if (!domain.currentDomain) {
+        throw new Error('Domain data is required');
+      }
+      
+      if (!interview.questions || interview.questions.length === 0) {
+        throw new Error('No questions available');
+      }
+
+      if (!interview.report) {
+        throw new Error('No report available');
+      }
+
+      const interviewData = {
+        userId: auth.user.uid,
+        domainData: domain.currentDomain,
+        questions: interview.questions,
+        userAnswers: interview.userAnswers || [],
+        report: interview.report,
+        completedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+
+      const docRef = await addDoc(collection(db, 'interviews'), interviewData);
+      
+      return { id: docRef.id, ...interviewData };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save interview to Firebase';
       return rejectWithValue(errorMessage);
     }
   }

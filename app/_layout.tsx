@@ -1,15 +1,18 @@
-import { persistor, store } from "@/store";
+import { persistor, RootState, store } from "@/store";
 import { authPersistence } from "@/store/authPersistence";
 import { initializeFromStorage } from "@/store/authSlice";
+import { loadUserDataFromFirebase } from "@/store/firebaseThunks";
 import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 const AuthStateBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useDispatch();
   const [isReady, setIsReady] = useState(false);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const firebaseDataLoaded = useSelector((state: RootState) => state.firebase.isDataLoaded);
 
   useEffect(() => {
     // console.log('Checking for stored user data...');
@@ -33,6 +36,13 @@ const AuthStateBridge: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
     initializeFromStoredData();
   }, [dispatch]);
+
+  // Load Firebase data when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && !firebaseDataLoaded) {
+      dispatch(loadUserDataFromFirebase() as any);
+    }
+  }, [isAuthenticated, firebaseDataLoaded, dispatch]);
 
   // Show loading spinner while checking stored data
   if (!isReady) {

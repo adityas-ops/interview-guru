@@ -1,8 +1,9 @@
 import ReportCard from '@/components/ReportCard';
 import { InterviewReport } from '@/services/aiService';
 import { RootState } from '@/store';
+import { addReport } from '@/store/firebaseSlice';
 import { clearReport } from '@/store/interviewSlice';
-import { generateInterviewReport } from '@/store/interviewThunks';
+import { generateInterviewReport, saveInterviewToFirebase } from '@/store/interviewThunks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { StatusBar } from "expo-status-bar";
@@ -26,6 +27,10 @@ const ReportScreen = () => {
   useEffect(() => {
     if (report) {
       addReportToStorage(report);
+      // Save to Firebase
+      dispatch(saveInterviewToFirebase() as any);
+      // Add report to Firebase state
+      dispatch(addReport(report));
       // Clear the report from Redux state to prevent duplicates
       dispatch(clearReport());
     }

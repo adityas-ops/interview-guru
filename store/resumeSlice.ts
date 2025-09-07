@@ -44,8 +44,12 @@ const resumeSlice = createSlice({
       state.currentResume = null;
       state.isProcessing = false;
     },
+    clearAllData: (state) => {
+      state.currentResume = null;
+      state.isProcessing = false;
+    },
   },
 });
 
-export const { setResumeData, setExtractedText, setPdfJsonData, setProcessing, clearResume } = resumeSlice.actions;
+export const { setResumeData, setExtractedText, setPdfJsonData, setProcessing, clearResume, clearAllData } = resumeSlice.actions;
 export default resumeSlice.reducer;

@@ -1,5 +1,6 @@
 import { RootState } from '@/store';
-import { completeDomainSelection, setExperience } from '@/store/domainSlice';
+import { completeDomainSelection, DomainData, setExperience } from '@/store/domainSlice';
+import { saveDomainToFirebase } from '@/store/firebaseThunks';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -56,9 +57,25 @@ const ExperienceSelection = () => {
     setSelectedExperience(experienceId);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     dispatch(setExperience(selectedExperience));
     dispatch(completeDomainSelection());
+    
+    // Save domain data to Firebase
+    try {
+      if (domainData) {
+        const updatedDomainData: DomainData = {
+          field: domainData.field,
+          skills: domainData.skills || [],
+          programmingLanguages: domainData.programmingLanguages || [],
+          experience: selectedExperience,
+          completedAt: new Date().toISOString()
+        };
+        dispatch(saveDomainToFirebase(updatedDomainData) as any);
+      }
+    } catch (error) {
+      console.error('Error saving domain to Firebase:', error);
+    }
     
     // Navigate back to home screen
     router.push('/(tabs)');

@@ -6,14 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,10 +25,10 @@ const Index = () => {
   );
 
   const [selectedLevel, setSelectedLevel] = useState<
-    "easy" | "medium" | "hard"
-  >(level);
+    "easy" | "medium" | "hard" | null
+  >(null);
   const [selectedQuestions, setSelectedQuestions] =
-    useState<number>(numberOfQuestions);
+    useState<number>(0);
 
   const levels = [
     { key: "easy", label: "Easy", locked: false },
@@ -45,7 +45,7 @@ const Index = () => {
   ];
 
   const handleLevelSelect = (
-    levelKey: "easy" | "medium" | "hard",
+    levelKey: "easy" | "medium" | "hard" | null,
     locked: boolean
   ) => {
     if (locked) {
@@ -58,7 +58,9 @@ const Index = () => {
     }
 
     setSelectedLevel(levelKey);
-    dispatch(setLevel(levelKey));
+    if (levelKey !== null) {
+      dispatch(setLevel(levelKey));
+    }
   };
 
   const handleQuestionCountSelect = (count: number, locked: boolean) => {
@@ -76,7 +78,7 @@ const Index = () => {
   };
 
   const handleContinue = async () => {
-    if (selectedLevel && selectedQuestions > 0) {
+    if (selectedLevel !== null && selectedQuestions > 0) {
       try {
         // Generate questions using AI
         const resultAction = await dispatch(generateInterviewQuestions());
@@ -218,11 +220,11 @@ useEffect(()=>{
           <TouchableOpacity
             style={[
               styles.continueButton,
-              (!selectedLevel || selectedQuestions === 0 || isLoading) &&
+              (selectedLevel === null || selectedQuestions === 0 || isLoading) &&
                 styles.disabledButton,
             ]}
             onPress={handleContinue}
-            disabled={!selectedLevel || selectedQuestions === 0 || isLoading}
+            disabled={selectedLevel === null || selectedQuestions === 0 || isLoading}
           >
             {isLoading ? (
               <View style={styles.loadingContainer}>
@@ -233,7 +235,7 @@ useEffect(()=>{
               <Text
                 style={[
                   styles.continueButtonText,
-                  (!selectedLevel || selectedQuestions === 0) &&
+                  (selectedLevel === null || selectedQuestions === 0) &&
                     styles.disabledButtonText,
                 ]}
               >

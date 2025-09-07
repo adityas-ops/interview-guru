@@ -1,5 +1,7 @@
+import ProgressChart from "@/components/ProgressChart";
+import RecentInterviews from "@/components/RecentInterviews";
 import { RootState } from "@/store";
-import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,6 +9,7 @@ import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,6 +49,27 @@ const HomeScreen = () => {
     };
     return fieldNames[field] || 'Developer';
   };
+
+  const handleStartInterview = () => {
+    if (!domainData || !domainData.field) {
+      Alert.alert(
+        'Domain Required',
+        'Please choose your domain first before starting an interview.',
+        [
+          {
+            text: 'Choose Domain',
+            onPress: () => router.push('/homeRoutes/chooseDomain')
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+      return;
+    }
+    router.push("/interview");
+  };
   return (
     <View style={styles.container}>
       {/* // gradient start from  left top and reach to bottom right */}
@@ -80,9 +104,7 @@ const HomeScreen = () => {
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              onPress={() => {
-                router.push("/interview")
-              }}
+              onPress={handleStartInterview}
               activeOpacity={0.3}
               style={styles.buttonContainer}
               
@@ -95,9 +117,11 @@ const HomeScreen = () => {
       </LinearGradient>
       <ScrollView
         style={{ flex: 1, padding: 15 }}
-        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1,paddingBottom:50 }}
       >
         {/* document upload */}
+        {/*
          <TouchableOpacity onPress={()=>{
           router.push("/interview/questions");
         }} activeOpacity={0.6} style={styles.resumeContainer}>
@@ -118,7 +142,9 @@ const HomeScreen = () => {
             />
           </View>
         </TouchableOpacity> 
+        */}
         {/* choose domain */}
+
 
         <TouchableOpacity onPress={()=>router.push(domainData ? "/homeRoutes/domainSelection/editDomain" : "/homeRoutes/chooseDomain")} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.SkillIconContainer}>
@@ -141,25 +167,12 @@ const HomeScreen = () => {
             />
           </View>
         </TouchableOpacity>
-        <Text style={styles.headingText}>Recent Sessions</Text>
-        <TouchableOpacity style={styles.reportContainer}>
-          <View style={styles.reportHeadingContainer}>
-            <Text style={styles.reportHeadingOne}>Quick Interview Session</Text>
-            <Text style={styles.reportHeadingScore}>--</Text>
-          </View>
-          <View style={styles.reportSecondaryContainer}>
-            <View style={styles.reportSeconarysubContainer}>
-              <Text style={styles.reportSeconarysubContainerDate}>
-                8/3/2025
-              </Text>
-                <View style={{width:5,height:5, borderRadius:"50%",backgroundColor:"#636363ff", marginBottom:6, marginHorizontal:7}}/>
-              <Text style={styles.reportSeconarysubContainerDate}>Done</Text>
-            </View>
-            <Text style={styles.reportSeconarysubContainerOverAllText}>
-              Overall Score
-            </Text>
-          </View>
-        </TouchableOpacity>
+        
+        {/* Progress Chart */}
+        <ProgressChart />
+        
+        {/* Recent Interviews */}
+        <RecentInterviews />
       </ScrollView>
       <StatusBar style="light" />
     </View>

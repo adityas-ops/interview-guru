@@ -1,7 +1,6 @@
 import Avatar from "@/components/Avatar";
+import { logoutUser } from "@/services/logoutService";
 import { RootState } from "@/store";
-import { authPersistence } from "@/store/authPersistence";
-import { clearUser } from "@/store/authSlice";
 import { MaterialIcons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { LinearGradient } from "expo-linear-gradient";
@@ -35,8 +34,7 @@ const SettingsScreen = () => {
 
   const submitLogout = async () => {
     try {
-      await authPersistence.clearUserData();
-      dispatch(clearUser());
+      await logoutUser(dispatch);
       router.replace("/auth/onBoarding");
     } catch (error) {
       console.error("Logout error:", error);
@@ -113,7 +111,7 @@ const SettingsScreen = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Confirm Logout</Text>
             <Text style={styles.modalMessage}>
-              Are you sure you want to logout?
+              Are you sure you want to logout? This will clear all your data including interview reports and progress.
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity

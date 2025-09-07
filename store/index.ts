@@ -3,6 +3,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import authReducer from "./authSlice";
 import domainReducer from "./domainSlice";
+import firebaseReducer from "./firebaseSlice";
 import interviewReducer from "./interviewSlice";
 import resumeReducer from "./resumeSlice";
 
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   resume: resumeReducer,
   domain: domainReducer,
   interview: interviewReducer,
+  firebase: firebaseReducer,
 });
 
 const persistConfig = {
