@@ -1,16 +1,19 @@
 import { InterviewReport } from '@/services/aiService';
 import { RootState } from '@/store';
+import { loadUserDataFromFirebase } from '@/store/firebaseThunks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface ProgressChartProps {
   style?: any;
 }
 
 const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
+  const dispatch = useDispatch();
   const [asyncStorageReports, setAsyncStorageReports] = useState<InterviewReport[]>([]);
   
   const firebaseReports = useSelector((state: RootState) => state.firebase.userData?.reports || [], (left, right) => {
@@ -23,6 +26,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
   
   const interviewReport = useSelector((state: RootState) => state.interview.report);
   const firebaseDataLoaded = useSelector((state: RootState) => state.firebase.isDataLoaded);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   useEffect(() => {
     const loadReports = async () => {
@@ -38,6 +42,16 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     
     loadReports();
   }, []);
+
+  // Refresh Firebase data when component comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated && firebaseDataLoaded) {
+        // Refresh Firebase data to get latest reports
+        dispatch(loadUserDataFromFirebase() as any);
+      }
+    }, [isAuthenticated, firebaseDataLoaded, dispatch])
+  );
 
   const reports = useMemo(() => {
     if (firebaseReports.length > 0) {

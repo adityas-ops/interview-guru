@@ -155,13 +155,13 @@ const RouteCard: React.FC<RouteCardProps> = ({
   routePath,
 }) => {
     const warningHandle = ()=>{
-    // Alert.alert("Alert", "This feature will coming soon.🤗")
-    router.replace({
-      pathname:"/",
-      params:{
-        index:1
-      }
-    })
+    Alert.alert("Alert", "This feature will coming soon.🤗")
+    // router.replace({
+    //   pathname:"/",
+    //   params:{
+    //     index:1
+    //   }
+    // })
   }
   return (
     <TouchableOpacity

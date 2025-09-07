@@ -1,5 +1,6 @@
 import AnimateView from "@/components/AnimateView";
 import { RootState } from "@/store";
+import { loadUserDataFromFirebase, saveInterviewToFirebase } from "@/store/firebaseThunks";
 import {
   clearAllData,
   initializeUserAnswers,
@@ -239,6 +240,11 @@ const QuestionsScreen = () => {
         try {
           const reportResult = await dispatch(generateInterviewReport() as any);
           setLoadingModal(false)
+          
+          // Save to Firebase and refresh data before clearing
+          await dispatch(saveInterviewToFirebase() as any);
+          await dispatch(loadUserDataFromFirebase() as any);
+          
           // Clear all interview data after successful completion
           dispatch(clearAllData());
           router.replace({
