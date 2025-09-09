@@ -123,7 +123,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
     return (
       <View style={[styles.container, style]}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Progress</Text>
+          <Text style={styles.title}>Your Progress asdas</Text>
         </View>
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>Complete your first interview to see your progress!</Text>
@@ -135,7 +135,7 @@ const ProgressChart: React.FC<ProgressChartProps> = ({ style }) => {
   return (
     <View style={[styles.container, style]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your Progress</Text>
+        <Text style={styles.title}>Your Progress asdasd</Text>
         <Text style={styles.subtitle}>{progressData.totalInterviews} interview{progressData.totalInterviews !== 1 ? 's' : ''} completed</Text>
       </View>
 

@@ -1,4 +1,4 @@
-import { firebaseDataService, FirebaseUserData } from '@/services/firebaseDataService';
+import { firebaseDataService, FirebaseUserData, ProgressUpdate } from '@/services/firebaseDataService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DomainData } from './domainSlice';
@@ -171,6 +171,56 @@ export const clearUserDataFromFirebase = createAsyncThunk(
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to clear user data from Firebase';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Progress Management Thunks
+
+// Load user progress from Firebase
+export const loadUserProgressFromFirebase = createAsyncThunk(
+  'firebase/loadUserProgress',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as RootState;
+      const userId = state.auth.user?.uid;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Loading progress for userId:', userId);
+      const progressStats = await firebaseDataService.getProgressStats(userId);
+      console.log('Progress stats loaded:', progressStats);
+      return progressStats;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load user progress from Firebase';
+      console.error('Error loading progress:', errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Update user progress after completing an interview
+export const updateUserProgressInFirebase = createAsyncThunk(
+  'firebase/updateUserProgress',
+  async (progressUpdate: ProgressUpdate, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as RootState;
+      const userId = state.auth.user?.uid;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      await firebaseDataService.updateUserProgress(userId, progressUpdate);
+      
+      // Reload progress stats after update
+      const updatedStats = await firebaseDataService.getProgressStats(userId);
+      return updatedStats;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update user progress in Firebase';
       return rejectWithValue(errorMessage);
     }
   }

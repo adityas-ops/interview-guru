@@ -1,12 +1,14 @@
 import { FirebaseUserData } from '@/services/firebaseDataService';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
-    clearUserDataFromFirebase,
-    loadUserDataFromFirebase,
-    saveDomainToFirebase,
-    saveInterviewToFirebase,
-    saveResumeToFirebase,
-    saveUserDataToFirebase
+  clearUserDataFromFirebase,
+  loadUserDataFromFirebase,
+  loadUserProgressFromFirebase,
+  saveDomainToFirebase,
+  saveInterviewToFirebase,
+  saveResumeToFirebase,
+  saveUserDataToFirebase,
+  updateUserProgressInFirebase
 } from './firebaseThunks';
 
 export interface FirebaseState {
@@ -157,6 +159,34 @@ const firebaseSlice = createSlice({
         state.error = null;
       })
       .addCase(clearUserDataFromFirebase.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Load user progress
+      .addCase(loadUserProgressFromFirebase.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loadUserProgressFromFirebase.fulfilled, (state) => {
+        state.isLoading = false;
+        state.lastSyncTime = new Date().toISOString();
+        state.error = null;
+      })
+      .addCase(loadUserProgressFromFirebase.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Update user progress
+      .addCase(updateUserProgressInFirebase.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProgressInFirebase.fulfilled, (state) => {
+        state.isLoading = false;
+        state.lastSyncTime = new Date().toISOString();
+        state.error = null;
+      })
+      .addCase(updateUserProgressInFirebase.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

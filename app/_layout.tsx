@@ -1,7 +1,7 @@
 import { persistor, RootState, store } from "@/store";
 import { authPersistence } from "@/store/authPersistence";
 import { initializeFromStorage } from "@/store/authSlice";
-import { loadUserDataFromFirebase } from "@/store/firebaseThunks";
+import { loadUserDataFromFirebase, loadUserProgressFromFirebase } from "@/store/firebaseThunks";
 import { Stack } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
@@ -41,6 +41,7 @@ const AuthStateBridge: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     if (isAuthenticated && !firebaseDataLoaded) {
       dispatch(loadUserDataFromFirebase() as any);
+      dispatch(loadUserProgressFromFirebase() as any);
     }
   }, [isAuthenticated, firebaseDataLoaded, dispatch]);
 

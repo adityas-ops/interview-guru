@@ -5,6 +5,7 @@ import authReducer from "./authSlice";
 import domainReducer from "./domainSlice";
 import firebaseReducer from "./firebaseSlice";
 import interviewReducer from "./interviewSlice";
+import progressReducer from "./progressSlice";
 import resumeReducer from "./resumeSlice";
 
 const rootReducer = combineReducers({
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
   domain: domainReducer,
   interview: interviewReducer,
   firebase: firebaseReducer,
+  progress: progressReducer,
 });
 
 const persistConfig = {

@@ -1,6 +1,6 @@
 import AnimateView from "@/components/AnimateView";
 import { RootState } from "@/store";
-import { loadUserDataFromFirebase, saveInterviewToFirebase } from "@/store/firebaseThunks";
+import { loadUserDataFromFirebase, saveInterviewToFirebase, updateUserProgressInFirebase } from "@/store/firebaseThunks";
 import {
   clearAllData,
   initializeUserAnswers,
@@ -31,7 +31,6 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 // import * as Speech from 'expo-speech'; // Uncomment when expo-speech is installed
 import Loader from "@/components/Loader";
-import { saveInterviewResult } from "@/services/firebaseService";
 
 const QuestionsScreen = () => {
   const dispatch = useDispatch();
@@ -46,6 +45,8 @@ const QuestionsScreen = () => {
     isGeneratingReport,
   } = useSelector((state: RootState) => state.interview);
   const { user } = useSelector((state: RootState) => state.auth);
+  const domainData = useSelector((state: RootState) => state.domain.currentDomain);
+  const interviewReport = useSelector((state: RootState) => state.interview.report);
 
   // Ensure userAnswers is always an array
   const safeUserAnswers = userAnswers || [];
@@ -219,31 +220,42 @@ const QuestionsScreen = () => {
         // Don't clear answerText here - let useEffect handle it when question changes
         console.log("Next question dispatched");
       } else {
-        // Save to Firebase and complete interview
+        // Complete interview and generate report
         dispatch(setSaving(true));
+        setIsSubmitted(true);
 
         if (!user?.uid) {
           throw new Error("User not authenticated");
         }
-        setIsSubmitted(true);
-        await saveInterviewResult({
-          userId: user.uid,
-          userAnswers: safeUserAnswers,
-          totalQuestions: questions.length,
-          level: questions[0]?.difficulty || "easy",
-          completedAt: new Date(),
-        });
 
-        dispatch(setSaving(false));
-
-        // Generate AI report
+        // Generate AI report first
         try {
           const reportResult = await dispatch(generateInterviewReport() as any);
-          setLoadingModal(false)
+          setLoadingModal(false);
           
-          // Save to Firebase and refresh data before clearing
+          // Save complete interview data to Firebase (including report)
           await dispatch(saveInterviewToFirebase() as any);
+          
+          // Update user progress in Firebase
+          if (domainData && interviewReport) {
+            const progressUpdate = {
+              interviewScore: interviewReport.overallScore,
+              questionsAnswered: questions.length,
+              domain: domainData.field,
+              difficulty: questions[0]?.difficulty || 'easy',
+              completedAt: new Date().toISOString()
+            };
+            
+            console.log('Updating progress with data:', progressUpdate);
+            const progressResult = await dispatch(updateUserProgressInFirebase(progressUpdate) as any);
+            console.log('Progress update result:', progressResult);
+          } else {
+            console.log('Missing data for progress update:', { domainData, interviewReport });
+          }
+          
           await dispatch(loadUserDataFromFirebase() as any);
+          
+          dispatch(setSaving(false));
           
           // Clear all interview data after successful completion
           dispatch(clearAllData());
@@ -255,6 +267,7 @@ const QuestionsScreen = () => {
           });
         } catch (error) {
           console.error("Error generating report:", error);
+          dispatch(setSaving(false));
           // Clear all interview data even if report generation fails
           dispatch(clearAllData());
           Alert.alert(

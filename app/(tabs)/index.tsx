@@ -1,6 +1,7 @@
-import ProgressChart from "@/components/ProgressChart";
+import ProgressStats from "@/components/ProgressStats";
 import RecentInterviews from "@/components/RecentInterviews";
 import { RootState } from "@/store";
+import { loadUserProgressFromFirebase } from "@/store/firebaseThunks";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -18,8 +19,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 const HomeScreen = () => {
+  const dispatch = useDispatch();
   const userData = useSelector((state: RootState) => state.auth.user);
   const domainData = useSelector((state: RootState) => state.domain.currentDomain);
   const [refreshKey, setRefreshKey] = React.useState(0);
@@ -57,7 +59,10 @@ const HomeScreen = () => {
     useCallback(() => {
       // Force refresh of RecentInterviews component
       setRefreshKey(prev => prev + 1);
-    }, [])
+      // Load progress data
+      console.log('Home screen focused, loading progress data...');
+      dispatch(loadUserProgressFromFirebase() as any);
+    }, [dispatch])
   );
 
   const handleStartInterview = () => {
@@ -128,7 +133,7 @@ const HomeScreen = () => {
       <ScrollView
         style={{ flex: 1, padding: 15 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1,paddingBottom:50 }}
+        contentContainerStyle={{ paddingBottom: 50 }}
       >
         {/* document upload */}
         {/*
@@ -178,8 +183,11 @@ const HomeScreen = () => {
           </View>
         </TouchableOpacity>
         
+        {/* Progress Stats */}
+        <ProgressStats />
+        
         {/* Progress Chart */}
-        <ProgressChart />
+        {/* <ProgressChart /> */}
         
         {/* Recent Interviews */}
         <RecentInterviews key={refreshKey} />
