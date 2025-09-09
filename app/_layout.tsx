@@ -68,6 +68,7 @@ export default function RootLayout() {
                 <Stack.Screen name="settings"/>
                 <Stack.Screen name="homeRoutes"/>
                  <Stack.Screen name="interview"/>
+                 <Stack.Screen name="learningWeb"/>
            </Stack>
         </AuthStateBridge>
       </PersistGate>

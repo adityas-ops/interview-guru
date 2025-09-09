@@ -1,8 +1,7 @@
-import LearningWebView from '@/components/LearningWebView';
 import { InterviewReport } from '@/services/aiService';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -15,8 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const ReportDetailsScreen = () => {
   const router = useRouter();
   const { reportData } = useLocalSearchParams<{ reportData: string }>();
-  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
-  const [selectedTitle, setSelectedTitle] = useState<string>('');
 
   // Parse the report data from the route params
   const report: InterviewReport = reportData ? JSON.parse(reportData) : null;
@@ -48,23 +45,14 @@ const ReportDetailsScreen = () => {
   };
 
   const handleLinkPress = (url: string, title: string) => {
-    setSelectedUrl(url);
-    setSelectedTitle(title);
+     router.push({
+      pathname:"/learningWeb",
+      params:{
+        url:url,
+        title:title
+      }
+     })
   };
-
-  const handleCloseWebView = () => {
-    setSelectedUrl(null);
-    setSelectedTitle('');
-  };
-
-  if (selectedUrl) {
-    return (
-      <LearningWebView
-        url={selectedUrl}
-        title={selectedTitle}
-      />
-    );
-  }
 
   const renderSuggestion = (suggestion: any, index: number) => (
     <TouchableOpacity

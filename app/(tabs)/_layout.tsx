@@ -34,6 +34,8 @@ const Layout = () => {
     };
 
     const panGesture = Gesture.Pan()
+        .activeOffsetX([-10, 10])
+        .failOffsetY([-5, 5])
         .onUpdate((event) => {
             translateX.value = event.translationX;
         })
@@ -133,6 +135,8 @@ const Layout = () => {
                                 offset: screenWidth * index,
                                 index,
                             })}
+                            nestedScrollEnabled={true}
+                            removeClippedSubviews={false}
                         />
                         {renderTabBar()}
                     </View>
@@ -150,6 +154,7 @@ const styles = StyleSheet.create({
     screenContainer: {
         width: screenWidth,
         flex: 1,
+        minHeight: '100%',
     },
     tabBar: {
         flexDirection: 'row',

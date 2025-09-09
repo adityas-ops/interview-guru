@@ -16,7 +16,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -87,79 +87,72 @@ const HomeScreen = () => {
   };
   return (
     <View style={styles.container}>
-      {/* // gradient start from  left top and reach to bottom right */}
-      <LinearGradient
-        colors={["rgba(53, 91, 161, 1)", "#5ca0ffff"]}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        locations={[0, 1]}
-      >
-        <SafeAreaView style={styles.safeAreaStyle}>
-          <View style={styles.welcomeContainer}>
-            <View style={styles.welcomeTextContainer}>
-              <Text style={styles.greatHeaderText}>good {greet},</Text>
-              <Text style={styles.greatHeaderText2}>
-                {userData?.displayName ? firstName : "User"}!
-              </Text>
-              <Text style={styles.greatDescriptionText}>
-                Ready for you next interview?
-              </Text>
-            </View>
-            <View style={styles.greatContainer}>
-              <Image
-                source={require("@/assets/images/cat.gif")}
-                style={{
-                  width: 100,
-                  height: 100,
-                }}
-                contentFit="cover"
-              />
-            </View>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={handleStartInterview}
-              activeOpacity={0.3}
-              style={styles.buttonContainer}
-              
-            >
-              <Ionicons name="play-outline" size={28} color="#3275d3ff" />
-              <Text style={styles.buttonText}>Start Interview</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
-      <ScrollView
-        style={{ flex: 1, padding: 15 }}
+     
+        {/* // gradient start from  left top and reach to bottom right */}
+        <LinearGradient
+          colors={["rgba(53, 91, 161, 1)", "#5ca0ffff"]}
+          style={styles.background}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          locations={[0, 1]}
+        >
+           {/* <ScrollView
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={styles.scrollContent}
+        bounces={true}
+        scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEnabled={true}
+      > */}
+          <SafeAreaView style={styles.safeAreaStyle}>
+            <View style={styles.welcomeContainer}>
+              <View style={styles.welcomeTextContainer}>
+                <Text style={styles.greatHeaderText}>good {greet},</Text>
+                <Text style={styles.greatHeaderText2}>
+                  {userData?.displayName ? firstName : "User"}!
+                </Text>
+                <Text style={styles.greatDescriptionText}>
+                  Ready for you next interview?
+                </Text>
+              </View>
+              <View style={styles.greatContainer}>
+                <Image
+                  source={require("@/assets/images/cat.gif")}
+                  style={{
+                    width: 100,
+                    height: 100,
+                  }}
+                  contentFit="cover"
+                />
+              </View>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                onPress={handleStartInterview}
+                activeOpacity={0.3}
+                style={styles.buttonContainer}
+                
+              >
+                <Ionicons name="play-outline" size={28} color="#3275d3ff" />
+                <Text style={styles.buttonText}>Start Interview</Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+                   <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        bounces={true}
+        scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
+        scrollEnabled={true}
       >
-        {/* document upload */}
-        {/*
-         <TouchableOpacity onPress={()=>{
-          router.push("/interview/questions");
-        }} activeOpacity={0.6} style={styles.resumeContainer}>
-          <View style={styles.iconContainer}>
-            <AntDesign name="upload" size={20} color="#04a256ff" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.resumeTextHeader}>Upload Resume</Text>
-            <Text style={styles.resumeSecondaryText}>
-              Get Personalized questions
-            </Text>
-          </View>
-          <View style={styles.arrowContainer}>
-            <MaterialIcons
-              name="arrow-forward-ios"
-              size={14}
-              color="#939090ff"
-            />
-          </View>
-        </TouchableOpacity> 
-        */}
+        <View style={styles.contentContainer}>
         {/* choose domain */}
-
 
         <TouchableOpacity onPress={()=>router.push(domainData ? "/homeRoutes/domainSelection/editDomain" : "/homeRoutes/chooseDomain")} activeOpacity={0.6} style={styles.resumeContainer}>
           <View style={styles.SkillIconContainer}>
@@ -185,12 +178,9 @@ const HomeScreen = () => {
         
         {/* Progress Stats */}
         <ProgressStats />
-        
-        {/* Progress Chart */}
-        {/* <ProgressChart /> */}
-        
-        {/* Recent Interviews */}
+
         <RecentInterviews key={refreshKey} />
+        </View>
       </ScrollView>
       <StatusBar style="light" />
     </View>
@@ -201,6 +191,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
+  },
+  contentContainer: {
+    padding: 15,
+    paddingBottom: 50,
   },
   background: {
     height: 270,
