@@ -183,6 +183,8 @@ Interview Context:
 - Interview Date: ${completedAt.toISOString()}
 - Total Questions: ${questions.length}
 
+Note: This is a practice interview session designed to help the candidate learn and improve. Be encouraging and focus on constructive feedback that will help them grow in their career.
+
 Question-Answer Analysis:
 ${qaPairs.map((qa, index) => `
 Question ${index + 1}:
@@ -196,8 +198,16 @@ Question ${index + 1}:
 
 Please provide a comprehensive analysis including:
 
-1. Overall Performance Score (0-10)
-2. Detailed feedback on each question with individual scores (0-10)
+1. Overall Performance Score (0-10) - Use the following scoring guidelines:
+   - 9-10: Excellent - Complete, accurate, and demonstrates deep understanding
+   - 8-8.9: Very Good - Mostly correct with minor gaps or areas for improvement
+   - 7-7.9: Good - Generally correct with some inaccuracies or missing details
+   - 6-6.9: Satisfactory - Partially correct but missing key concepts
+   - 5-5.9: Below Average - Some understanding but significant gaps
+   - 4-4.9: Poor - Limited understanding with major inaccuracies
+   - 0-3.9: Very Poor - Incorrect or no meaningful response
+
+2. Detailed feedback on each question with individual scores (0-10) using the same scoring scale above
 3. Identify strengths and areas for improvement
 4. For each question where the user struggled, provide specific learning suggestions with:
    - Topic name
@@ -205,6 +215,36 @@ Please provide a comprehensive analysis including:
    - A relevant learning URL (use reputable sources like MDN, W3Schools, official documentation, Stack Overflow, etc.)
    - A descriptive title for the URL
 5. General suggestions for overall improvement
+
+IMPORTANT SCORING GUIDELINES FOR PRACTICE INTERVIEWS:
+- This is a PRACTICE interview - be encouraging and generous with scoring
+- If the answer shows understanding of the core concept, give at least 7/10
+- Don't penalize for minor technical details or perfect syntax
+- Focus on whether the candidate understands the fundamental concepts
+- If the answer is mostly correct with minor gaps, score 8-9/10
+- Only give low scores (below 6) if the answer is fundamentally wrong or shows no understanding
+- Consider partial credit for partially correct answers
+- Reward effort and attempt to solve the problem, even if not perfect
+- Remember: The goal is to encourage learning, not to be overly critical
+
+SCORING BY QUESTION TYPE:
+- Technical Questions: Score based on understanding of concepts, not perfect implementation
+- Behavioral Questions: Score based on clear communication and relevant examples
+- Scenario Questions: Score based on problem-solving approach and logical thinking
+- Conceptual Questions: Score based on understanding of principles and ability to explain
+
+SPECIFIC SCORING EXAMPLES:
+- Correct answer with minor syntax issues: 8-9/10
+- Correct approach but missing some details: 7-8/10
+- Partially correct with good understanding: 6-7/10
+- Wrong approach but shows some knowledge: 4-6/10
+- Completely wrong or no answer: 0-3/10
+
+BONUS SCORING FOR PRACTICE INTERVIEWS:
+- If the answer is fundamentally correct, add 0.5-1 point to the score
+- If the candidate shows good problem-solving thinking, add 0.5 points
+- If the answer demonstrates understanding of best practices, add 0.5 points
+- If the candidate shows effort to explain their reasoning, add 0.5 points
 
 Focus on:
 - Technical accuracy and depth of understanding
@@ -215,12 +255,19 @@ Focus on:
 
 For learning URLs, prioritize:
 - Official documentation
-- MDN Web Docs
 - W3Schools
 - Stack Overflow
 - GitHub documentation
 - Educational platforms like freeCodeCamp, Codecademy
 - YouTube tutorials from reputable channels
+- GeeksForGeeks
+
+Remember to:
+- Be encouraging and constructive in your feedback
+- Highlight what the candidate did well
+- Provide specific, actionable improvement suggestions
+- Use a supportive tone that motivates learning
+- Focus on growth and development rather than just pointing out mistakes
 
 Return the analysis in the specified JSON format.`;
   }
