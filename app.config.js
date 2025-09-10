@@ -32,7 +32,14 @@ export default {
       output: "static",
       favicon: "./assets/images/intervewguru-logo.png",
     },
-    plugins: ["expo-router"],
+    plugins: ["expo-router",[
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to use the microphone.",
+          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]],
     extra: {
       firebaseApiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,

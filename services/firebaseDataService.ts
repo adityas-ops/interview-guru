@@ -432,13 +432,20 @@ export class FirebaseDataService {
       const currentDate = new Date(progressUpdate.completedAt);
       const daysDifference = lastInterviewDate ? Math.floor((currentDate.getTime() - lastInterviewDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
       
-      let newCurrentStreak = currentProgress.currentStreak;
-      if (daysDifference === 1) {
-        newCurrentStreak += 1;
-      } else if (daysDifference > 1) {
-        newCurrentStreak = 1;
+      let newCurrentStreak = 1; // Start with 1 for the current interview
+      if (lastInterviewDate) {
+        if (daysDifference === 1) {
+          // Consecutive day - add to existing streak
+          newCurrentStreak = currentProgress.currentStreak + 1;
+        } else if (daysDifference > 1) {
+          // Gap of more than 1 day - reset to 1
+          newCurrentStreak = 1;
+        } else if (daysDifference === 0) {
+          // Same day - keep current streak (don't increment)
+          newCurrentStreak = currentProgress.currentStreak;
+        }
       }
-      // If daysDifference === 0, keep current streak (same day)
+      // If no lastInterviewDate (first interview), newCurrentStreak remains 1
       
       const newLongestStreak = Math.max(currentProgress.longestStreak, newCurrentStreak);
 
@@ -503,11 +510,11 @@ export class FirebaseDataService {
     currentStreak: number;
     longestStreak: number;
     totalQuestions: number;
-    domainStats: Array<{
+    domainStats: {
       domain: string;
       interviews: number;
       averageScore: number;
-    }>;
+    }[];
     difficultyStats: {
       easy: { completed: number; averageScore: number };
       medium: { completed: number; averageScore: number };
@@ -553,11 +560,11 @@ export class FirebaseDataService {
     currentStreak: number;
     longestStreak: number;
     totalQuestions: number;
-    domainStats: Array<{
+    domainStats: {
       domain: string;
       interviews: number;
       averageScore: number;
-    }>;
+    }[];
     difficultyStats: {
       easy: { completed: number; averageScore: number };
       medium: { completed: number; averageScore: number };
@@ -604,7 +611,7 @@ export class FirebaseDataService {
       // Calculate streaks (simplified - consecutive days with interviews)
       const sortedDates = interviews
         .map(interview => new Date(interview.completedAt))
-        .sort((a, b) => b.getTime() - a.getTime());
+        .sort((a, b) => b.getTime() - a.getTime()); // Newest first
       
       let currentStreak = 0;
       let longestStreak = 0;
@@ -612,17 +619,22 @@ export class FirebaseDataService {
       
       for (let i = 0; i < sortedDates.length; i++) {
         if (i === 0) {
+          // First (most recent) interview = streak of 1
           tempStreak = 1;
         } else {
+          // Compare current date with previous (more recent) date
           const daysDiff = Math.floor((sortedDates[i-1].getTime() - sortedDates[i].getTime()) / (1000 * 60 * 60 * 24));
           if (daysDiff === 1) {
+            // Consecutive day - increment streak
             tempStreak += 1;
           } else {
+            // Gap found - save current streak and reset
             longestStreak = Math.max(longestStreak, tempStreak);
             tempStreak = 1;
           }
         }
       }
+      // Don't forget to check the final streak
       longestStreak = Math.max(longestStreak, tempStreak);
       currentStreak = tempStreak;
 

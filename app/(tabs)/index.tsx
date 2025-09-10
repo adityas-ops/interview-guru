@@ -60,7 +60,7 @@ const HomeScreen = () => {
       // Force refresh of RecentInterviews component
       setRefreshKey(prev => prev + 1);
       // Load progress data
-      console.log('Home screen focused, loading progress data...');
+      // console.log('Home screen focused, loading progress data...');
       dispatch(loadUserProgressFromFirebase() as any);
     }, [dispatch])
   );
@@ -96,16 +96,6 @@ const HomeScreen = () => {
           end={{ x: 1, y: 1 }}
           locations={[0, 1]}
         >
-           {/* <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        bounces={true}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled={true}
-        scrollEnabled={true}
-      > */}
           <SafeAreaView style={styles.safeAreaStyle}>
             <View style={styles.welcomeContainer}>
               <View style={styles.welcomeTextContainer}>
@@ -180,8 +170,17 @@ const HomeScreen = () => {
         <ProgressStats />
 
         <RecentInterviews key={refreshKey} />
+            {/* <TouchableOpacity onPress={()=>{
+        router.push("/mikeTest")
+      }}>
+        <Text>
+          Mike testing
+        </Text>
+      </TouchableOpacity> */}
         </View>
+
       </ScrollView>
+  
       <StatusBar style="light" />
     </View>
   );

@@ -37,7 +37,7 @@ export class AIService {
     this.apiKey = API_CONFIG.GOOGLE_AI_API_KEY;
     
     // Debug logging
-    console.log('AIService: API Key loaded from env:', this.apiKey ? 'Yes' : 'No');
+    // console.log('AIService: API Key loaded from env:', this.apiKey ? 'Yes' : 'No');
     
     if (!validateApiKey()) {
       console.warn('Google AI API key not found. Please set EXPO_PUBLIC_GOOGLE_AI_API_KEY in your environment.');
@@ -107,7 +107,7 @@ Make sure the questions are shuffled and cover different aspects of the domain.`
   public async generateQuestions(params: QuestionGenerationParams): Promise<InterviewQuestion[]> {
     try {
       const prompt = this.createPrompt(params);
-      console.log('AIService: Generating questions with prompt length:', prompt.length);
+      // console.log('AIService: Generating questions with prompt length:', prompt.length);
       
       const result = await generateObject({
         model: this.googleProvider('gemini-1.5-flash'),
@@ -139,7 +139,7 @@ Make sure the questions are shuffled and cover different aspects of the domain.`
       const { questions, userAnswers, domainData, completedAt } = params;
       
       const prompt = this.createReportPrompt(params);
-      console.log('AIService: Generating interview report with prompt length:', prompt.length);
+      // console.log('AIService: Generating interview report with prompt length:', prompt.length);
       
       const result = await generateObject({
         model: this.googleProvider('gemini-1.5-flash'),

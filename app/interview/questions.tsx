@@ -1,4 +1,5 @@
 import AnimateView from "@/components/AnimateView";
+import Loader from "@/components/Loader";
 import { RootState } from "@/store";
 import { loadUserDataFromFirebase, saveInterviewToFirebase, updateUserProgressInFirebase } from "@/store/firebaseThunks";
 import {
@@ -11,31 +12,35 @@ import {
 } from "@/store/interviewSlice";
 import { generateInterviewReport } from "@/store/interviewThunks";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, usePreventRemove } from "@react-navigation/native";
+import { usePreventRemove } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   BackHandler,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-// import * as Speech from 'expo-speech'; // Uncomment when expo-speech is installed
-import Loader from "@/components/Loader";
 
 const QuestionsScreen = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const navigation = useNavigation();
   const {
     questions,
     currentQuestionIndex,
@@ -50,10 +55,12 @@ const QuestionsScreen = () => {
 
   // Ensure userAnswers is always an array
   const safeUserAnswers = userAnswers || [];
-
+  const [recognizing, setRecognizing] = useState(false);
   const [answerText, setAnswerText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [showHints, setShowHints] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const isTypingRef = useRef(false);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -64,18 +71,32 @@ const QuestionsScreen = () => {
 
   useEffect(() => {
     if (!isLoading && questions.length === 0) {
-      // Alert.alert(
-      //   "No Questions",
-      //   "No questions available. Please go back and generate questions first.",
-      //   [
-      //     {
-      //       text: "Go Back",
-      //       onPress: () => router.back(),
-      //     },
-      //   ]
-      // );
     }
   }, [questions.length, isLoading, router]);
+
+  // Keyboard event listeners
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e: any) => {
+        setKeyboardHeight(e.endCoordinates.height);
+        setIsKeyboardVisible(true);
+      }
+    );
+    
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+        setIsKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
 
 
@@ -160,29 +181,40 @@ const QuestionsScreen = () => {
     isTypingRef.current = false;
   };
 
-  const handleSpeechToText = async () => {
-    if (isRecording) {
-      // Stop recording
-      setIsRecording(false);
-      // Speech.stop(); // Uncomment when expo-speech is installed
-    } else {
-      // Start recording
-      setIsRecording(true);
-      try {
-        // Note: For actual speech-to-text, you would need to use a library like expo-speech
-        // or integrate with a speech recognition service
-        // For now, we'll simulate it with a placeholder
-        Alert.alert(
-          "Speech to Text",
-          "Speech-to-text functionality would be implemented here. For now, please type your answer.",
-          [{ text: "OK" }]
-        );
-        setIsRecording(false);
-      } catch (error) {
-        console.error("Speech recognition error:", error);
-        setIsRecording(false);
-      }
+
+    useSpeechRecognitionEvent("start", () => setRecognizing(true));
+    useSpeechRecognitionEvent("end", () => setRecognizing(false));
+    useSpeechRecognitionEvent("result", (event) => {
+      setAnswerText(event.results[0]?.transcript);
+    });
+    useSpeechRecognitionEvent("error", (event) => {
+      console.log("error code:", event.error, "error message:", event.message);
+    });
+
+  const handleStartSpeechToText = async () => {
+    const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!result.granted) {
+      console.warn("Permissions not granted", result);
+      return;
     }
+    
+    // Check if continuous mode is supported (Android 13+)
+    const supportsContinuous = Platform.OS === 'ios' || Platform.OS === 'web' || 
+      (Platform.OS === 'android' && Platform.Version >= 33); // Android 13+ (API level 33)
+    
+    // Start speech recognition
+    ExpoSpeechRecognitionModule.start({
+      lang: "en-US",
+      interimResults: true,
+      continuous: supportsContinuous, // Enable continuous recording if supported
+      // Android-specific options for better continuous recognition
+      ...(Platform.OS === 'android' && {
+        androidIntentOptions: {
+          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 10000, // 10 seconds of silence before stopping
+          EXTRA_MASK_OFFENSIVE_WORDS: false,
+        },
+      }),
+    });
   };
 
   const handleSaveAndNext = async () => {
@@ -212,13 +244,13 @@ const QuestionsScreen = () => {
           answer: answerText.trim(),
         })
       );
-      console.log("Answer saved successfully");
+      // console.log("Answer saved successfully");
 
       if (!isLastQuestion) {
-        console.log("Moving to next question");
+        // console.log("Moving to next question");
         dispatch(nextQuestion());
         // Don't clear answerText here - let useEffect handle it when question changes
-        console.log("Next question dispatched");
+        // console.log("Next question dispatched");
       } else {
         // Complete interview and generate report
         dispatch(setSaving(true));
@@ -246,11 +278,11 @@ const QuestionsScreen = () => {
               completedAt: new Date().toISOString()
             };
             
-            console.log('Updating progress with data:', progressUpdate);
+            // console.log('Updating progress with data:', progressUpdate);
             const progressResult = await dispatch(updateUserProgressInFirebase(progressUpdate) as any);
             console.log('Progress update result:', progressResult);
           } else {
-            console.log('Missing data for progress update:', { domainData, interviewReport });
+            // console.log('Missing data for progress update:', { domainData, interviewReport });
           }
           
           await dispatch(loadUserDataFromFirebase() as any);
@@ -335,7 +367,7 @@ const QuestionsScreen = () => {
 
   if (isLoading || !currentQuestion || !questions || questions.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.container}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading questions...</Text>
         </View>
@@ -345,11 +377,21 @@ const QuestionsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimateView>
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <AnimateView>
+          <ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={[
+              styles.scrollViewContent,
+              isKeyboardVisible && { paddingBottom: keyboardHeight + 20 }
+            ]}
+          >
           {/* Header */}
           <View style={styles.header}>
      
@@ -429,19 +471,51 @@ const QuestionsScreen = () => {
                   autoCorrect={true}
                   autoCapitalize="sentences"
                 />
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[
                     styles.speechButton,
                     isRecording && styles.speechButtonActive,
                   ]}
-                  onPress={handleSpeechToText}
+                  onPress={handleStartSpeechToText}
                 >
                   <Ionicons
                     name={isRecording ? "stop" : "mic"}
                     size={24}
                     color={isRecording ? "#fff" : "#667eea"}
                   />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                {
+                  !recognizing ? (
+                    <TouchableOpacity
+                     style={[
+                    styles.speechButton,
+                    isRecording && styles.speechButtonActive,
+                  ]}
+                     onPress={handleStartSpeechToText}>
+                      <Ionicons
+                        name="mic"
+                        size={24}
+                        color="#667eea"
+                      />
+                    </TouchableOpacity>
+
+                  )
+                  :(
+                    <TouchableOpacity 
+                     style={[
+                    styles.speechButton,
+                    isRecording && styles.speechButtonActive,
+                  ]}
+                    onPress={() => ExpoSpeechRecognitionModule.stop()}>
+                      <Ionicons
+                        name="stop"
+                        size={24}
+                        color="#fc3434ff"
+                      />
+                    </TouchableOpacity>
+                  )
+                }
+ 
               </View>
             </View>
 
@@ -531,8 +605,9 @@ const QuestionsScreen = () => {
               )}
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </AnimateView>
+          </ScrollView>
+        </AnimateView>
+      </KeyboardAvoidingView>
       {/* loading model */}
       <Modal
         visible={loadingModal}
@@ -573,9 +648,15 @@ const styles = StyleSheet.create({
     color: "#4a5568",
     fontWeight: "500",
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
   },
   header: {
     flexDirection: "row",

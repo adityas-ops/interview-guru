@@ -102,7 +102,7 @@ const interviewSlice = createSlice({
                 });
                 
                 // Debug logging to track answer count
-                console.log(`Answer saved for question ${questionIndex + 1}/${state.questions.length}. Total answers: ${state.userAnswers.length}`);
+                // console.log(`Answer saved for question ${questionIndex + 1}/${state.questions.length}. Total answers: ${state.userAnswers.length}`);
             }
         },
         setSaving: (state, action: PayloadAction<boolean>) => {

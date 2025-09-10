@@ -48,19 +48,19 @@ const RecentInterviews: React.FC<RecentInterviewsProps> = ({ style }) => {
     try {
       setLoading(true);
       const userInterviews = await fetchUserInterviews(userData.uid);
-      console.log('Loaded interviews:', userInterviews);
+      // console.log('Loaded interviews:', userInterviews);
       userInterviews.forEach((interview, index) => {
-        console.log(`Interview ${index}:`, {
-          id: interview.id,
-          questionsCount: interview.questions?.length || 0,
-          answersCount: interview.userAnswers?.length || 0,
-          questions: interview.questions?.map(q => q.question).slice(0, 3), // First 3 questions
-          answers: interview.userAnswers?.map(a => a.question).slice(0, 3), // First 3 answers
-          allAnswers: interview.userAnswers?.map(a => ({
-            question: a.question,
-            answer: a.humanAnswer?.substring(0, 50) + '...' // First 50 chars of answer
-          }))
-        });
+        // console.log(`Interview ${index}:`, {
+        //   id: interview.id,
+        //   questionsCount: interview.questions?.length || 0,
+        //   answersCount: interview.userAnswers?.length || 0,
+        //   questions: interview.questions?.map(q => q.question).slice(0, 3), // First 3 questions
+        //   answers: interview.userAnswers?.map(a => a.question).slice(0, 3), // First 3 answers
+        //   allAnswers: interview.userAnswers?.map(a => ({
+        //     question: a.question,
+        //     answer: a.humanAnswer?.substring(0, 50) + '...' // First 50 chars of answer
+        //   }))
+        // });
         
         // Check for duplicate questions in answers
         if (interview.userAnswers && interview.userAnswers.length > 0) {

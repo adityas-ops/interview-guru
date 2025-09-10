@@ -19,8 +19,8 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
   const [retryCount, setRetryCount] = useState(0);
 
   // Debug logging
-  console.log('ProgressStats - isLoading:', isLoading);
-  console.log('ProgressStats - progressStats:', progressStats);
+  // console.log('ProgressStats - isLoading:', isLoading);
+  // console.log('ProgressStats - progressStats:', progressStats);
 
   // Check if user has interviews when progress stats are null
   useEffect(() => {
@@ -29,7 +29,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
         try {
           const interviews = await fetchUserInterviews(userData.uid);
           setHasInterviews(interviews.length > 0);
-          console.log('Found interviews:', interviews.length);
+          // console.log('Found interviews:', interviews.length);
         } catch (error) {
           console.error('Error checking for interviews:', error);
           setHasInterviews(false);
@@ -44,7 +44,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
   useEffect(() => {
     if (!progressStats && hasInterviews === true && !isLoading && retryCount < 3) {
       const timer = setTimeout(() => {
-        console.log('Auto-retrying progress load...');
+        // console.log('Auto-retrying progress load...');
         handleRetry();
       }, 3000); // Retry after 3 seconds
 
@@ -53,7 +53,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
   }, [hasInterviews, isLoading, retryCount]);
 
   const handleRetry = () => {
-    console.log('Retrying progress load...');
+    // console.log('Retrying progress load...');
     setRetryCount(prev => prev + 1);
     dispatch(loadUserProgressFromFirebase() as any);
   };
@@ -102,11 +102,11 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
     return '#F44336';
   };
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 8) return 'Excellent';
-    if (score >= 6) return 'Good';
-    return 'Needs Improvement';
-  };
+  // const getScoreLabel = (score: number) => {
+  //   if (score >= 8) return 'Excellent';
+  //   if (score >= 6) return 'Good';
+  //   return 'Needs Improvement';
+  // };
 
   return (
     <View style={[styles.container, style]}>
@@ -118,17 +118,24 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
           <View style={styles.statIcon}>
             <Ionicons name="briefcase" size={24} color="#5b22eb" />
           </View>
-          <Text style={styles.statValue}>{progressStats.totalInterviews}</Text>
+          <Text style={styles.statValue}>{progressStats?.totalInterviews ?? '-'}</Text>
           <Text style={styles.statLabel}>Interviews</Text>
         </View>
 
         {/* Average Score */}
         <View style={styles.statCard}>
           <View style={styles.statIcon}>
-            <Ionicons name="trending-up" size={24} color={getScoreColor(progressStats.averageScore)} />
+            <Ionicons
+              name="trending-up"
+              size={24}
+              color={progressStats ? getScoreColor(progressStats.averageScore) : '#666'}
+            />
           </View>
-          <Text style={[styles.statValue, { color: getScoreColor(progressStats.averageScore) }]}>
-            {progressStats.averageScore.toFixed(1)}
+          <Text style={[
+            styles.statValue,
+            { color: progressStats ? getScoreColor(progressStats.averageScore) : '#666' }
+          ]}>
+            {progressStats ? progressStats.averageScore.toFixed(1) : '-'}
           </Text>
           <Text style={styles.statLabel}>Average Score</Text>
         </View>
@@ -139,7 +146,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
             <Ionicons name="trophy" size={24} color="#FFD700" />
           </View>
           <Text style={[styles.statValue, { color: '#FFD700' }]}>
-            {progressStats.bestScore.toFixed(1)}
+            {progressStats ? progressStats.bestScore.toFixed(1) : '-'}
           </Text>
           <Text style={styles.statLabel}>Best Score</Text>
         </View>
@@ -150,7 +157,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
             <Ionicons name="flame" size={24} color="#FF6B35" />
           </View>
           <Text style={[styles.statValue, { color: '#FF6B35' }]}>
-            {progressStats.currentStreak}
+            {progressStats?.currentStreak ?? '-'}
           </Text>
           <Text style={styles.statLabel}>Current Streak</Text>
         </View>
@@ -161,20 +168,20 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ style }) => {
         <View style={styles.additionalStat}>
           <Ionicons name="help-circle" size={16} color="#666" />
           <Text style={styles.additionalStatText}>
-            {progressStats.totalQuestions} questions answered
+            {progressStats ? progressStats.totalQuestions : '-'} questions answered
           </Text>
         </View>
         
         <View style={styles.additionalStat}>
           <Ionicons name="calendar" size={16} color="#666" />
           <Text style={styles.additionalStatText}>
-            Longest streak: {progressStats.longestStreak} days
+            Longest streak: {progressStats ? progressStats.longestStreak : '-'} days
           </Text>
         </View>
       </View>
 
       {/* Domain Progress */}
-      {progressStats.domainStats.length > 0 && (
+      {progressStats && progressStats.domainStats.length > 0 && (
         <View style={styles.domainSection}>
           <Text style={styles.sectionTitle}>Domain Progress</Text>
           {progressStats.domainStats.map((domain, index) => (

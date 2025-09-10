@@ -13,7 +13,7 @@ const Layout = () => {
     const flatListRef = useRef<FlatList>(null);
     const translateX = useSharedValue(0);
     const {index} = useLocalSearchParams()
-    console.log("index",index)
+    // console.log("index",index)
 
     useEffect(()=>{
         if(index){

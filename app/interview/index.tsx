@@ -1,4 +1,3 @@
-import AnimateView from "@/components/AnimateView";
 import Loader from "@/components/Loader";
 import { AppDispatch, RootState } from "@/store";
 import {
@@ -131,10 +130,11 @@ const Index = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AnimateView>
+      <View style={{flex:1}}>
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
+
         >
           <View style={styles.header}>
             <Text style={styles.title}>Interview Setup</Text>
@@ -266,7 +266,7 @@ const Index = () => {
             )}
           </TouchableOpacity>
         </ScrollView>
-      </AnimateView>
+      </View>
       <Modal
         visible={loading}
         transparent={true}
@@ -296,10 +296,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa",
+    paddingTop:50
   },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingVertical:10
   },
   header: {
     paddingVertical: 30,
