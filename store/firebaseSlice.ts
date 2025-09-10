@@ -1,18 +1,20 @@
 import { FirebaseUserData } from '@/services/firebaseDataService';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
-  clearUserDataFromFirebase,
-  loadUserDataFromFirebase,
-  loadUserProgressFromFirebase,
-  saveDomainToFirebase,
-  saveInterviewToFirebase,
-  saveResumeToFirebase,
-  saveUserDataToFirebase,
-  updateUserProgressInFirebase
+    clearUserDataFromFirebase,
+    loadUserDataFromFirebase,
+    loadUserProgressFromFirebase,
+    loadUserReportsFromFirebase,
+    saveDomainToFirebase,
+    saveInterviewToFirebase,
+    saveResumeToFirebase,
+    saveUserDataToFirebase,
+    updateUserProgressInFirebase
 } from './firebaseThunks';
 
 export interface FirebaseState {
   userData: FirebaseUserData | null;
+  reports: any[]; // Reports loaded from interviews collection
   isLoading: boolean;
   error: string | null;
   lastSyncTime: string | null;
@@ -21,6 +23,7 @@ export interface FirebaseState {
 
 const initialState: FirebaseState = {
   userData: null,
+  reports: [],
   isLoading: false,
   error: null,
   lastSyncTime: null,
@@ -187,6 +190,21 @@ const firebaseSlice = createSlice({
         state.error = null;
       })
       .addCase(updateUserProgressInFirebase.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Load user reports
+      .addCase(loadUserReportsFromFirebase.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loadUserReportsFromFirebase.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.reports = action.payload;
+        state.lastSyncTime = new Date().toISOString();
+        state.error = null;
+      })
+      .addCase(loadUserReportsFromFirebase.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

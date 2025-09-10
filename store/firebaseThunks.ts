@@ -18,8 +18,10 @@ export const loadUserDataFromFirebase = createAsyncThunk(
       }
 
       const userData = await firebaseDataService.loadUserData(userId);
+      console.log('loadUserDataFromFirebase - userData received:', userData);
       
       if (!userData) {
+        console.log('No Firebase data found, attempting migration from AsyncStorage');
         // If no Firebase data exists, try to migrate from AsyncStorage
         const asyncStorageData = await AsyncStorage.getItem('persist:root');
         if (asyncStorageData) {
@@ -27,11 +29,14 @@ export const loadUserDataFromFirebase = createAsyncThunk(
           await firebaseDataService.migrateFromAsyncStorage(userId, parsedData);
           // Load the migrated data
           const migratedData = await firebaseDataService.loadUserData(userId);
+          console.log('Migration completed, migrated data:', migratedData);
           return migratedData;
         }
+        console.log('No AsyncStorage data found for migration');
         return null;
       }
 
+      console.log('Returning Firebase user data:', userData);
       return userData;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load user data from Firebase';
@@ -75,6 +80,8 @@ export const saveInterviewToFirebase = createAsyncThunk(
       const state = getState() as RootState;
       const userId = state.auth.user?.uid;
       
+      console.log('saveInterviewToFirebase called with userId:', userId);
+      
       if (!userId) {
         throw new Error('User not authenticated');
       }
@@ -100,14 +107,25 @@ export const saveInterviewToFirebase = createAsyncThunk(
         createdAt: new Date().toISOString(),
       };
 
+      console.log('Saving interview data:', {
+        questionsCount: interviewData.questions.length,
+        answersCount: interviewData.userAnswers.length,
+        reportScore: interviewData.report.overallScore,
+        reportCompletedAt: interviewData.report.completedAt
+      });
+
       const interviewId = await firebaseDataService.saveInterview(userId, interviewData);
+      console.log('Interview saved with ID:', interviewId);
       
       // Also save the report separately
+      console.log('Adding report to user data...');
       await firebaseDataService.addReportToUser(userId, state.interview.report);
+      console.log('Report added to user data successfully');
       
       return { interviewId, ...interviewData };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save interview to Firebase';
+      console.error('Error in saveInterviewToFirebase:', errorMessage);
       return rejectWithValue(errorMessage);
     }
   }
@@ -221,6 +239,42 @@ export const updateUserProgressInFirebase = createAsyncThunk(
       return updatedStats;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update user progress in Firebase';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Load user reports from interviews collection
+export const loadUserReportsFromFirebase = createAsyncThunk(
+  'firebase/loadUserReports',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as RootState;
+      const userId = state.auth.user?.uid;
+      
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Loading user reports from interviews collection for userId:', userId);
+      const interviews = await firebaseDataService.loadUserInterviews(userId);
+      
+      // Extract reports from interviews
+      const reports = interviews
+        .filter(interview => interview.report) // Only interviews with reports
+        .map(interview => interview.report)
+        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()); // Sort by completedAt desc
+      
+      console.log('Loaded reports from interviews:', { 
+        interviewsCount: interviews.length, 
+        reportsCount: reports.length,
+        reports: reports.map(r => r.completedAt)
+      });
+      
+      return reports;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load user reports from Firebase';
+      console.error('Error loading user reports:', errorMessage);
       return rejectWithValue(errorMessage);
     }
   }

@@ -7,7 +7,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
   where,
@@ -112,11 +111,20 @@ export class FirebaseDataService {
   // Load complete user data
   async loadUserData(userId: string): Promise<FirebaseUserData | null> {
     try {
+      console.log('Loading user data for userId:', userId);
       const userDocRef = doc(db, 'users', userId);
       const userDocSnap = await getDoc(userDocRef);
       
       if (userDocSnap.exists()) {
         const data = userDocSnap.data();
+        console.log('Firebase user data found:', {
+          userId: data.userId || userId,
+          hasDomainData: !!data.domainData,
+          hasResumeData: !!data.resumeData,
+          reportsCount: data.reports?.length || 0,
+          reports: data.reports || []
+        });
+        
         return {
           userId: data.userId || userId,
           domainData: data.domainData || null,
@@ -126,6 +134,7 @@ export class FirebaseDataService {
         } as FirebaseUserData;
       }
       
+      console.log('No Firebase user data found for userId:', userId);
       return null;
     } catch (error) {
       console.error('Error loading user data from Firebase:', error);
@@ -158,8 +167,7 @@ export class FirebaseDataService {
       const interviewsRef = collection(db, 'interviews');
       const q = query(
         interviewsRef,
-        where('userId', '==', userId),
-        orderBy('completedAt', 'desc')
+        where('userId', '==', userId)
       );
       
       const querySnapshot = await getDocs(q);
@@ -174,6 +182,9 @@ export class FirebaseDataService {
           } as FirebaseInterviewData);
         }
       });
+      
+      // Sort by completedAt in descending order (newest first) in JavaScript
+      interviews.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
       
       return interviews;
     } catch (error) {
@@ -207,8 +218,7 @@ export class FirebaseDataService {
       const reportsRef = collection(db, 'reports');
       const q = query(
         reportsRef,
-        where('userId', '==', userId),
-        orderBy('completedAt', 'desc')
+        where('userId', '==', userId)
       );
       
       const querySnapshot = await getDocs(q);
@@ -223,6 +233,9 @@ export class FirebaseDataService {
           } as FirebaseReportData);
         }
       });
+      
+      // Sort by completedAt in descending order (newest first) in JavaScript
+      reports.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
       
       return reports;
     } catch (error) {
@@ -264,6 +277,7 @@ export class FirebaseDataService {
   // Add report to user's reports array
   async addReportToUser(userId: string, report: InterviewReport): Promise<void> {
     try {
+      console.log('addReportToUser called with:', { userId, report: report.completedAt });
       const userDocRef = doc(db, 'users', userId);
       const userDocSnap = await getDoc(userDocRef);
       
@@ -271,6 +285,9 @@ export class FirebaseDataService {
       if (userDocSnap.exists()) {
         const data = userDocSnap.data();
         reports = data.reports || [];
+        console.log('Existing reports count:', reports.length);
+      } else {
+        console.log('User document does not exist, creating new one');
       }
       
       // Add new report to the beginning of the array
@@ -281,12 +298,14 @@ export class FirebaseDataService {
         reports = reports.slice(0, 50);
       }
       
+      console.log('Saving reports to Firebase:', { reportsCount: reports.length, reports: reports.map(r => r.completedAt) });
+      
       await setDoc(userDocRef, {
         reports,
         lastUpdated: new Date().toISOString()
       }, { merge: true });
       
-      console.log('Report added to user data in Firebase');
+      console.log('Report added to user data in Firebase successfully');
     } catch (error) {
       console.error('Error adding report to user data in Firebase:', error);
       throw error;

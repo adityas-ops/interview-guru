@@ -86,9 +86,9 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onPress, onDelete }) =>
       </TouchableOpacity>
       </View>
       
-      <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+      {/* <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
         <Ionicons name="trash-outline" size={20} color="#EF4444" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

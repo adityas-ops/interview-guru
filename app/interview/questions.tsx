@@ -1,7 +1,7 @@
 import AnimateView from "@/components/AnimateView";
 import Loader from "@/components/Loader";
 import { RootState } from "@/store";
-import { loadUserDataFromFirebase, saveInterviewToFirebase, updateUserProgressInFirebase } from "@/store/firebaseThunks";
+import { loadUserDataFromFirebase, loadUserReportsFromFirebase, saveInterviewToFirebase, updateUserProgressInFirebase } from "@/store/firebaseThunks";
 import {
   clearAllData,
   initializeUserAnswers,
@@ -286,6 +286,7 @@ const QuestionsScreen = () => {
           }
           
           await dispatch(loadUserDataFromFirebase() as any);
+          await dispatch(loadUserReportsFromFirebase() as any);
           
           dispatch(setSaving(false));
           

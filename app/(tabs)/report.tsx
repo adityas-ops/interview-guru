@@ -2,12 +2,12 @@ import ReportCard from '@/components/ReportCard';
 import { InterviewReport } from '@/services/aiService';
 import { RootState } from '@/store';
 import { addReport } from '@/store/firebaseSlice';
+import { loadUserReportsFromFirebase } from '@/store/firebaseThunks';
 import { clearReport } from '@/store/interviewSlice';
 import { generateInterviewReport, saveInterviewToFirebase } from '@/store/interviewThunks';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,58 +16,44 @@ const ReportScreen = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { report, isGeneratingReport, reportError } = useSelector((state: RootState) => state.interview);
-  const [reports, setReports] = useState<InterviewReport[]>([]);
+  const firebaseReports = useSelector((state: RootState) => state.firebase.reports || []);
+  const firebaseDataLoaded = useSelector((state: RootState) => state.firebase.isDataLoaded);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const isLoading = useSelector((state: RootState) => state.firebase.isLoading);
 
-  // Load reports from AsyncStorage on component mount
+  // Load reports from Firebase when component mounts or user becomes authenticated
   useEffect(() => {
-    loadReports();
-  }, []);
+    if (isAuthenticated && !firebaseDataLoaded) {
+      console.log('Loading reports from Firebase...');
+      dispatch(loadUserReportsFromFirebase() as any);
+    }
+  }, [isAuthenticated, firebaseDataLoaded, dispatch]);
 
   // Add new report to the list when generated
   useEffect(() => {
     if (report) {
-      addReportToStorage(report);
       // Save to Firebase
       dispatch(saveInterviewToFirebase() as any);
       // Add report to Firebase state
       dispatch(addReport(report));
       // Clear the report from Redux state to prevent duplicates
       dispatch(clearReport());
+      
+      // Reload reports from Firebase after saving
+      setTimeout(() => {
+        dispatch(loadUserReportsFromFirebase() as any);
+      }, 1000); // Small delay to ensure Firebase save is complete
     }
   }, [report, dispatch]);
 
-  const loadReports = async () => {
-    try {
-      const storedReports = await AsyncStorage.getItem('interview_reports');
-      if (storedReports) {
-        setReports(JSON.parse(storedReports));
-      }
-    } catch (error) {
-      console.error('Error loading reports:', error);
-    }
-  };
-
-  const addReportToStorage = async (newReport: InterviewReport) => {
-    try {
-      // Check if report already exists to prevent duplicates
-      const existingReport = reports.find(r => r.completedAt === newReport.completedAt);
-      if (existingReport) {
-        return; // Don't add duplicate
-      }
-      
-      const updatedReports = [newReport, ...reports];
-      setReports(updatedReports);
-      await AsyncStorage.setItem('interview_reports', JSON.stringify(updatedReports));
-    } catch (error) {
-      console.error('Error saving report:', error);
-    }
-  };
-
   const deleteReport = async (reportToDelete: InterviewReport) => {
     try {
-      const updatedReports = reports.filter(r => r.completedAt !== reportToDelete.completedAt);
-      setReports(updatedReports);
-      await AsyncStorage.setItem('interview_reports', JSON.stringify(updatedReports));
+      // Note: For now, we'll just show an alert since we need to implement Firebase deletion
+      Alert.alert(
+        'Delete Report',
+        'Report deletion from Firebase is not yet implemented. This feature will be added soon.',
+        [{ text: 'OK' }]
+      );
     } catch (error) {
       console.error('Error deleting report:', error);
       Alert.alert('Error', 'Failed to delete report. Please try again.');
@@ -108,7 +94,7 @@ const ReportScreen = () => {
         reportData: JSON.stringify(report)
       }
     });
-  };
+    };
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
@@ -133,7 +119,11 @@ const ReportScreen = () => {
       )}
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {reports.length === 0 ? (
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading reports...</Text>
+          </View>
+        ) : firebaseReports.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>No Reports Yet</Text>
             <Text style={styles.emptyText}>
@@ -152,7 +142,7 @@ const ReportScreen = () => {
           </View>
         ) : (
           <View style={styles.reportsContainer}>
-            {reports.map((report, index) => (
+            {firebaseReports.map((report, index) => (
               <ReportCard
                 key={`${report.completedAt}-${index}`}
                 report={report}
