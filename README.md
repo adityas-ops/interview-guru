@@ -15,11 +15,7 @@ A React Native app for interview preparation with Firebase authentication and Re
 
 The app now uses a simple and effective approach:
 
-### 🔐 **Simple User Data Persistence**
-- **Redux Storage**: User data is stored in Redux state
-- **AsyncStorage**: User data is automatically persisted to mobile storage
-- **No Firebase Auth State**: Firebase authentication state is not managed by the app
-- **Direct Storage**: User data is stored directly when logging in/signing up
+
 
 ### 📱 **How It Works**
 1. **Login/Signup**: User data is stored in both Redux and AsyncStorage
